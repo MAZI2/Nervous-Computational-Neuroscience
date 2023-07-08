@@ -16,7 +16,7 @@ if( MSVC )
 endif()
 
 set( GLFW-CMAKE-STARTER-SRC
-     main.cpp
+     main.c
      )
      
 add_executable( GLFW-CMake-starter WIN32 ${GLFW-CMAKE-STARTER-SRC} )
