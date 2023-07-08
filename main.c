@@ -11,28 +11,39 @@ typedef struct _Point {
     float x, y, z;
 } Point;
 
+void buildCircle(float radius, int vCount, float cx, float cy) {
+    Point** points=malloc(vCount*sizeof(Point));
 
-static const Point* points;
-
-/*
-void buildCircle(float radius, int vCount) {
-    float angle=(2*Math.PI)/vCount;
+    float angle=(2*M_PI)/vCount;
     int triangleCount=vCount-2;
-
-    points=malloc()
-
-    Verte
 
     for(int i=0;i<vCount;i++) {
         float currentAngle=angle*i;
-        float x=radius*cos(currentAngle); 
-        float y=radius*sin(currentAngle);
+        float x=radius*cos(currentAngle) + cx/20; 
+        float y=radius*sin(currentAngle) - cy/20;
         float z=0.0f; 
+        
+        Point* point=malloc(sizeof(Point));
+        point->x=x;
+        point->y=y;
+        point->z=z;
 
-
+        points[i]=point;
     }
+    
+    for(int i=0;i<=triangleCount;i++) {
+        glBegin(GL_TRIANGLES);
+            
+
+        glVertex3f(points[0]->x, points[0]->z, points[0]->y);
+        glVertex3f(points[i]->x, points[i]->z, points[i]->y);
+        glVertex3f(points[i+1]->x, points[i+1]->z, points[i+1]->y);
+
+        glEnd();        
+    }
+
+    free(points);
 }
-*/
 
 int main() {
     GLFWwindow* window;
@@ -50,45 +61,18 @@ int main() {
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    glClearColor( 0.2f, 0.3f, 0.4f, 0.0f );
-
-    /*
-    while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
-
-
-        glBegin(GL_TRIANGLES);
-        glColor3f(1.f, 0.f, 0.f);
-        glVertex3f(-5.f, 0.f, -4.f);
-        glColor3f(0.f, 1.f, 0.f);
-        glVertex3f(5.f, 0.f, -4.f);
-        glColor3f(0.f, 0.f, 1.f);
-        glVertex3f(0.f, 0.f, 6.f);
-        glEnd();
-
-        glfwSwapBuffers(window);
-
-        glfwPollEvents();
-    }
-    */
 
     int width, height;
-    double x;
+    double cx, cy;
 
     while (!glfwWindowShouldClose(window)) {
-
-        double t = glfwGetTime();
-        glfwGetCursorPos(window, &x, NULL);
-
-        // Get window size (may be different than the requested size)
         glfwGetWindowSize(window, &width, &height);
-
-        // Special case: avoid division by zero below
-        height = height > 0 ? height : 1;
-
+        height = height > 0 ? height : 1; // Special case: avoid division by zero below
         glViewport(0, 0, width, height);
 
         // Clear color buffer to black
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND); 
         glClearColor(0.f, 0.f, 0.f, 0.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -104,25 +88,19 @@ int main() {
                   0.f, 20.f, 0.f,   // View-point
                   0.f, 0.f, 1.f);   // Up-vector
 
-        // Draw a rotating colorful triangle
-        glTranslatef(0.f, 14.f, 0.f);
+        glTranslatef(0.f, 20.f, 0.f);
+
         /*
+        double t = glfwGetTime();
         glRotatef(0.3f * (GLfloat) x + (GLfloat) t * 100.f, 0.f, 0.f, 1.f);
         */
 
-        glBegin(GL_TRIANGLES);
-        glColor3f(1.f, 0.f, 0.f);
-        glVertex3f(-5.f, 0.f, -4.f);
-        glColor3f(0.f, 1.f, 0.f);
-        glVertex3f(5.f, 0.f, -4.f);
-        glColor3f(0.f, 0.f, 1.f);
-        glVertex3f(0.f, 0.f, 6.f);
-        glEnd();
+        glColor4f(1.f, 1.f, 1.f, 1.f);
+        buildCircle(0.5f, 20, 0.f, 0.f);
 
-        // Swap buffers
+
         glfwSwapBuffers(window);
         glfwPollEvents();
-
     }
 
 
