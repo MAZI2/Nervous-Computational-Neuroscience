@@ -1,49 +1,93 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "nerve.h"
 
-#include <math.h>
-
-#define GLFW_INCLUDE_GLU
-#include <GLFW/glfw3.h>
+static Nerve** nerves;
 
 
-typedef struct _Point {
-    float x, y, z;
-} Point;
-
-void buildCircle(float radius, int vCount, float cx, float cy) {
-    Point** points=malloc(vCount*sizeof(Point));
-
-    float angle=(2*M_PI)/vCount;
-    int triangleCount=vCount-2;
-
-    for(int i=0;i<vCount;i++) {
-        float currentAngle=angle*i;
-        float x=radius*cos(currentAngle) + cx/20; 
-        float y=radius*sin(currentAngle) - cy/20;
-        float z=0.0f; 
-        
-        Point* point=malloc(sizeof(Point));
-        point->x=x;
-        point->y=y;
-        point->z=z;
-
-        points[i]=point;
-    }
-    
-    for(int i=0;i<=triangleCount;i++) {
-        glBegin(GL_TRIANGLES);
-            
-
-        glVertex3f(points[0]->x, points[0]->z, points[0]->y);
-        glVertex3f(points[i]->x, points[i]->z, points[i]->y);
-        glVertex3f(points[i+1]->x, points[i+1]->z, points[i+1]->y);
-
-        glEnd();        
-    }
-
-    free(points);
+int randInt(int lower, int upper) {
+    int num = (rand() % (upper - lower + 1)) + lower;
+    return num;
 }
+
+void createConnections() {
+    for(int i=0;i<20;i++) {
+        int connNum=randInt(1, 3);
+        int valid=0;
+
+        Nerve** conn=malloc(connNum*sizeof(Nerve*));
+
+        printf("%d: ", i);
+        for(int c=0;c<connNum;c++) {
+            int x, y;
+
+            if(i%5==0) 
+                x=randInt(0, 1);
+            else if(i%5==4)
+                x=randInt(-1, 0);
+            else
+                x=randInt(-1, 1);
+
+
+            if(i<5)
+                y=randInt(0, 1); 
+            else if(i>14)
+                y=randInt(-1, 0);
+            else
+                y=randInt(-1, 1);
+
+            conn[valid]=nerves[i+y*5+x];
+            printf("%d ", i+y*5+x);
+
+            valid++;
+
+           /* 
+            if(i+x>=0 && i+y*5>=0 && i+y*5+x!=i && i+5*y+x<20) {
+                conn[valid]=nerves[i+y*5+x];
+                printf("%d ", i+y*5+x);
+
+                valid++;
+            }
+            */
+        }
+        printf("\n");
+        nerves[i]->connectionNum=valid;
+        nerves[i]->connections=conn;
+    }
+}
+
+void createNerves() {
+   int count=0;
+   nerves=malloc(20*sizeof(Nerve*));
+   for(int i=0;i<4;i++) {
+        for(int j=0;j<5;j++) {
+            Nerve* new=malloc(sizeof(Nerve));
+            new->x=j*75-100;
+            new->y=i*75-100;
+
+            nerves[count]=new;
+            count++;
+
+        } 
+   } 
+
+   createConnections();
+}
+
+
+
+void drawNerves() {
+    glColor4f(0.f, 1.f, 1.f, 1.f);
+    for(int i=0;i<20;i++) {
+        if(i==4)
+            glColor4f(1.f, 0.f, 0.f, 1.f);
+        buildCircle(0.3f, 20, nerves[i]);
+        glColor4f(0.f, 1.f, 1.f, 1.f);
+    }
+
+}
+
+
+
+
 
 int main() {
     GLFWwindow* window;
@@ -64,6 +108,8 @@ int main() {
 
     int width, height;
     double cx, cy;
+
+    createNerves();
 
     while (!glfwWindowShouldClose(window)) {
         glfwGetWindowSize(window, &width, &height);
@@ -95,14 +141,12 @@ int main() {
         glRotatef(0.3f * (GLfloat) x + (GLfloat) t * 100.f, 0.f, 0.f, 1.f);
         */
 
-        glColor4f(1.f, 1.f, 1.f, 1.f);
-        buildCircle(0.5f, 20, 0.f, 0.f);
-
+        //-------------------------------------------------------------------------
+        drawNerves();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
 
     glfwTerminate();
     return 0;
