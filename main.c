@@ -1,7 +1,11 @@
 #include "nerve.h"
+#include <unistd.h>
+#include <pthread.h>
 
 static Nerve** nerves;
 
+Nerve** activeBuffer[5];
+int activeNumsBuffer[5];
 
 int randInt(int lower, int upper) {
     int num = (rand() % (upper - lower + 1)) + lower;
@@ -34,19 +38,12 @@ void createConnections() {
             else
                 y=randInt(-1, 1);
 
-            conn[valid]=nerves[i+y*5+x];
-            printf("%d ", i+y*5+x);
-
-            valid++;
-
-           /* 
-            if(i+x>=0 && i+y*5>=0 && i+y*5+x!=i && i+5*y+x<20) {
+            if(x!=0||y!=0) {
                 conn[valid]=nerves[i+y*5+x];
                 printf("%d ", i+y*5+x);
 
                 valid++;
             }
-            */
         }
         printf("\n");
         nerves[i]->connectionNum=valid;
@@ -62,32 +59,106 @@ void createNerves() {
             Nerve* new=malloc(sizeof(Nerve));
             new->x=j*75-100;
             new->y=i*75-100;
+            new->id=count;
 
             nerves[count]=new;
             count++;
-
         } 
    } 
 
    createConnections();
 }
 
+void sendPulse(Nerve** activeNerves, int* activeNum) {
+    usleep(500000);
 
+    if(*activeNum>0) {
+       int count=0;
+       Nerve* tempNerves[20];
 
-void drawNerves() {
-    glColor4f(0.f, 1.f, 1.f, 1.f);
-    for(int i=0;i<20;i++) {
-        if(i==4)
-            glColor4f(1.f, 0.f, 0.f, 1.f);
-        buildCircle(0.3f, 20, nerves[i]);
-        glColor4f(0.f, 1.f, 1.f, 1.f);
-    }
+       //for all active of current path count sum of connections from them
+       for(int i=0;i<*activeNum;i++) {
 
+           //add all connected neurons to temporary array and make it new active
+           for(int j=0;j<activeNerves[i]->connectionNum;j++) {
+               int alreadyActive=0;
+               for(int z=0;z<count;z++) {
+                    if(tempNerves[z]==activeNerves[i]->connections[j]) {
+                        alreadyActive=1; 
+                        break;
+                    }
+               }
+               if(!alreadyActive) {
+                    tempNerves[count]=activeNerves[i]->connections[j];
+
+                    printf("%d->%d\n", activeNerves[i]->id, activeNerves[i]->connections[j]->id);
+                    count++;
+               }
+           }      
+       }
+       //set new number of active points and fill the new active array from temporary
+       *activeNum=count;
+       for(int i=0;i<*activeNum;i++) {
+           activeNerves[i]=tempNerves[i]; 
+       }
+       printf("----\n");
+
+//       printf("%d\n", *activeNum);
+       sendPulse(activeNerves, activeNum);
+   }
 }
 
 
+void *thread(void *vargp) {
+        int t;
+        int* key=(int *)vargp;
+        printf("%d\n", *key);
+
+        for(int i=0;i<5;i++) {
+            if(activeBuffer[i]==NULL) {
+                activeBuffer[i]=malloc(20*sizeof(Nerve*));
+                activeBuffer[i][0]=nerves[*key];
+                activeNumsBuffer[i]=1;
+
+                t=i;
+
+                break; 
+            }
+        }
+        sendPulse(activeBuffer[t], &activeNumsBuffer[t]);
+
+        free(activeBuffer[t]);
+        activeBuffer[t]=NULL;
 
 
+    return NULL;
+}
+
+/*
+void keyPressed(GLFWwindow* window, int key, int scancode, int action, int mods) {  
+    int keyNum=key-'0';
+    if(action==GLFW_PRESS) {
+
+    }  
+}
+*/
+
+void drawNerves() {
+    glColor4f(1.f, 1.f, 1.f, 1.f);
+    for(int i=0;i<20;i++) {
+        for(int b=0;b<5;b++) {
+            for(int j=0;j<activeNumsBuffer[b];j++) {
+                if(nerves[i]==activeBuffer[b][j]) {
+                    glColor4f(1.f, 0.f, 0.f, 1.f);
+                } 
+            }
+        }
+
+        buildCircle(0.2f, 20, nerves[i]);
+        glColor4f(1.f, 1.f, 1.f, 0.5f);
+
+    }
+}
 
 int main() {
     GLFWwindow* window;
@@ -111,6 +182,27 @@ int main() {
 
     createNerves();
 
+    //thread for every path
+    for(int i=0;i<5;i++) activeBuffer[i]=NULL;
+
+    int a=10;
+    int b=19;
+    int c=1;
+
+    pthread_t thread_id1;
+    pthread_create(&thread_id1, NULL, thread, (void *)&a);
+
+    /*
+    usleep(200000);
+    pthread_t thread_id2;
+    pthread_create(&thread_id2, NULL, thread, (void *)&b);
+    usleep(300000);
+    pthread_t thread_id3;
+    pthread_create(&thread_id3, NULL, thread, (void *)&c);
+
+    */
+
+
     while (!glfwWindowShouldClose(window)) {
         glfwGetWindowSize(window, &width, &height);
         height = height > 0 ? height : 1; // Special case: avoid division by zero below
@@ -119,6 +211,7 @@ int main() {
         // Clear color buffer to black
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND); 
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glClearColor(0.f, 0.f, 0.f, 0.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -142,11 +235,22 @@ int main() {
         */
 
         //-------------------------------------------------------------------------
+     
+
         drawNerves();
+
+        //glfwSetKeyCallback(window, keyPressed);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    
+    pthread_join(thread_id1, NULL);
+    /*
+    pthread_join(thread_id2, NULL);
+    pthread_join(thread_id3, NULL);
+    */
 
     glfwTerminate();
     return 0;

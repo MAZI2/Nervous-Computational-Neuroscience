@@ -13,12 +13,14 @@ typedef struct _Nerve {
     float x, y;
     struct _Nerve** connections;
     int connectionNum;
+    int id;
 } Nerve;
 
 void buildCircle(float radius, int vCount, Nerve* nerve) {
     float cx=nerve->x;
     float cy=nerve->y;
 
+    //drawing a circle
     Point** points=malloc(vCount*sizeof(Point));
 
     float angle=(2*M_PI)/vCount;
@@ -41,21 +43,32 @@ void buildCircle(float radius, int vCount, Nerve* nerve) {
     for(int i=0;i<=triangleCount;i++) {
         glBegin(GL_TRIANGLES);
 
-
         glVertex3f(points[0]->x, points[0]->z, points[0]->y);
         glVertex3f(points[i]->x, points[i]->z, points[i]->y);
         glVertex3f(points[i+1]->x, points[i+1]->z, points[i+1]->y);
 
         glEnd();
     }
+    //drawing connections
     Nerve** connections=nerve->connections;
 
     for(int i=0;i<nerve->connectionNum;i++) {
-//       printf("%f %f -> %f %f\n", nerve->x, nerve->y, connections[i]->x, connections[i]->y);
+       float xa=nerve->x/20;
+       float ya=-(nerve->y/20);
+       float xb=connections[i]->x/20;
+       float yb=-connections[i]->y/20;
 
        glBegin(GL_LINES);
-       glVertex3f(nerve->x/20, 0.f, (nerve->y/20)-1);
-       glVertex3f(connections[i]->x/20, 0.f, (connections[i]->y/20)-1);
+       glVertex3f(xa, 0.f, ya);
+       glVertex3f(xb, 0.f, yb);
+       glEnd();
+
+       float px=0.9f*(xb-xa)+xa;
+       float py=0.9f*(yb-ya)+ya;
+
+       glPointSize(3);
+       glBegin(GL_POINTS);
+       glVertex3f(px, 0.f, py);
        glEnd();
     }
 
