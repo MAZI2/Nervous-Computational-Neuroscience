@@ -7,6 +7,7 @@ static Nerve** nerves;
 Nerve** activeBuffer[5];
 int activeNumsBuffer[5];
 
+
 int randInt(int lower, int upper) {
     int num = (rand() % (upper - lower + 1)) + lower;
     return num;
@@ -17,7 +18,7 @@ void createConnections() {
         int connNum=randInt(1, 3);
         int valid=0;
 
-        Nerve** conn=malloc(connNum*sizeof(Nerve*));
+        Connection** conn=malloc(connNum*sizeof(Connection*));
 
         printf("%d: ", i);
         for(int c=0;c<connNum;c++) {
@@ -39,7 +40,11 @@ void createConnections() {
                 y=randInt(-1, 1);
 
             if(x!=0||y!=0) {
-                conn[valid]=nerves[i+y*5+x];
+                Connection* newConnection=malloc(sizeof(Connection));
+                newConnection->end=nerves[i+y*5+x];
+                newConnection->strength=1;
+
+                conn[valid]=newConnection;
                 printf("%d ", i+y*5+x);
 
                 valid++;
@@ -83,15 +88,15 @@ void sendPulse(Nerve** activeNerves, int* activeNum) {
            for(int j=0;j<activeNerves[i]->connectionNum;j++) {
                int alreadyActive=0;
                for(int z=0;z<count;z++) {
-                    if(tempNerves[z]==activeNerves[i]->connections[j]) {
+                    if(tempNerves[z]==activeNerves[i]->connections[j]->end) {
                         alreadyActive=1; 
                         break;
                     }
                }
                if(!alreadyActive) {
-                    tempNerves[count]=activeNerves[i]->connections[j];
+                    tempNerves[count]=activeNerves[i]->connections[j]->end;
 
-                    printf("%d->%d\n", activeNerves[i]->id, activeNerves[i]->connections[j]->id);
+                    printf("%d->%d\n", activeNerves[i]->id, activeNerves[i]->connections[j]->end->id);
                     count++;
                }
            }      

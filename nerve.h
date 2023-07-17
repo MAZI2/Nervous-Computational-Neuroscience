@@ -9,12 +9,20 @@ typedef struct _Point {
     float x, y, z;
 } Point;
 
+struct _Connection;
+
 typedef struct _Nerve {
     float x, y;
-    struct _Nerve** connections;
+    struct _Connection** connections;
     int connectionNum;
     int id;
 } Nerve;
+
+typedef struct _Connection {
+    Nerve* end;
+    int strength;
+} Connection;
+
 
 void buildCircle(float radius, int vCount, Nerve* nerve) {
     float cx=nerve->x;
@@ -50,14 +58,15 @@ void buildCircle(float radius, int vCount, Nerve* nerve) {
         glEnd();
     }
     //drawing connections
-    Nerve** connections=nerve->connections;
+    Connection** connections=nerve->connections;
 
     for(int i=0;i<nerve->connectionNum;i++) {
        float xa=nerve->x/20;
        float ya=-(nerve->y/20);
-       float xb=connections[i]->x/20;
-       float yb=-connections[i]->y/20;
+       float xb=connections[i]->end->x/20;
+       float yb=-connections[i]->end->y/20;
 
+       //glLineWidth(5);
        glBegin(GL_LINES);
        glVertex3f(xa, 0.f, ya);
        glVertex3f(xb, 0.f, yb);
