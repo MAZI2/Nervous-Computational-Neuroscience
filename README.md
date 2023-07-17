@@ -1,8 +1,9 @@
-# GLFW CMake starter
+# Project nervous
+
+## GLFW CMake starter
 GLFW homepage: [glfw.org](https://www.glfw.org/)  
 GLFW on GitHub: [github.com/glfw/glfw](https://www.github.com/glfw/glfw)
 
-## Getting the code
 ```
 git clone --recursive https://github.com/juliettef/GLFW-CMake-starter
 ```
