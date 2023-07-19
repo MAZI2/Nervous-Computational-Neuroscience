@@ -16,6 +16,7 @@ typedef struct _Nerve {
     struct _Connection** connections;
     int connectionNum;
     int id;
+    float potential;
 } Nerve;
 
 typedef struct _Connection {
@@ -66,7 +67,7 @@ void buildCircle(float radius, int vCount, Nerve* nerve) {
        float xb=connections[i]->end->x/20;
        float yb=-connections[i]->end->y/20;
 
-       //glLineWidth(5);
+       glLineWidth(connections[i]->strength);
        glBegin(GL_LINES);
        glVertex3f(xa, 0.f, ya);
        glVertex3f(xb, 0.f, yb);
