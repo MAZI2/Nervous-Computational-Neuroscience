@@ -2,12 +2,6 @@
 #include <unistd.h>
 #include <pthread.h>
 
-static Nerve** nerves;
-
-Nerve** activeBuffer[5];
-int activeNumsBuffer[5];
-
-
 int randInt(int lower, int upper) {
     int num = (rand() % (upper - lower + 1)) + lower;
     return num;
@@ -18,7 +12,7 @@ void createConnections() {
         int connNum=randInt(1, 3);
         int valid=0;
 
-        Connection** conn=malloc(connNum*sizeof(Connection*));
+//        Connection** conn=malloc(connNum*sizeof(Connection*));
 
         printf("%d: ", i);
         for(int c=0;c<connNum;c++) {
@@ -40,19 +34,47 @@ void createConnections() {
                 y=randInt(-1, 1);
 
             if(x!=0||y!=0) {
+                /*
                 Connection* newConnection=malloc(sizeof(Connection));
                 newConnection->end=nerves[i+y*5+x];
                 newConnection->strength=randInt(1, 3);
 
                 conn[valid]=newConnection;
                 printf("%d(%d) ", i+y*5+x, newConnection->strength);
-
+                
                 valid++;
+                */
+
+                wrec[i][i+y*5+x]=randInt(1, 3);
+               printf("%d(%f) ", i+y*5+x, wrec[i][i+y*5+x]);
+
             }
         }
         printf("\n");
+        /*
         nerves[i]->connectionNum=valid;
         nerves[i]->connections=conn;
+        */
+    }
+    for(int i=0;i<4;i++) {
+        printf("%d: ", i);
+        for(int j=0;j<4;j++) {
+            win[i][j*5]=randInt(0, 3);
+            if(win[i][j*5]>0)
+                printf("%d(%f) ", j*5, win[i][j*5]);
+
+        }
+        printf("\n");
+    }
+    for(int i=4;i<20;i+=5) {
+        printf("%d: ", i);
+        for(int j=0;j<4;j++) {
+            wout[i][j]=randInt(0, 3);
+            if(wout[i][j]>0)
+                printf("%d(%f) ", j, wout[i][j]);
+
+        }
+        printf("\n");
     }
 }
 
@@ -62,7 +84,7 @@ void createNerves() {
    for(int i=0;i<4;i++) {
         for(int j=0;j<5;j++) {
             Nerve* new=malloc(sizeof(Nerve));
-            new->x=j*75-100;
+            new->x=j*75-150;
             new->y=i*75-100;
             new->id=count;
             new->potential=0;
@@ -71,81 +93,121 @@ void createNerves() {
             count++;
         } 
    } 
+   inputs=malloc(4*sizeof(Nerve*));
+   for(int i=0;i<4;i++) {
+        Nerve* new=malloc(sizeof(Nerve));
+        new->x=-250;
+        new->y=i*75-100;
+        new->id=i;
+        new->potential=0;
 
+        inputs[i]=new;
+   }
+   outputs=malloc(4*sizeof(Nerve*));
+   for(int i=0;i<4;i++) {
+        Nerve* new=malloc(sizeof(Nerve));
+        new->x=250;
+        new->y=i*75-100;
+        new->id=i;
+        new->potential=0;
+
+        outputs[i]=new;
+   }
    createConnections();
 }
 
-void sendPulse(Nerve** activeNerves, int* activeNum) {
+void sendPulse() {//Nerve** activeNerves, int* activeNum) {
     usleep(1000000);
 
-    if(*activeNum>0) {
-       int count=0;
-       Nerve* tempNerves[20];
+   Nerve* temp[20];
 
+   int count=0;
 
-       //for all active of current path count sum of connections from them
-       for(int i=0;i<*activeNum;i++) {
+   for(int i=0;i<20;i++) {
+       float potential=nerves[i]->potential;
 
-           //add all connected neurons to temporary array and make it new active
-           for(int j=0;j<activeNerves[i]->connectionNum;j++) {
-               int alreadyActive=0; //on cooldown
-               
-               //if connection point is active in any buffer do not do anything
-               for(int z=0;z<5;z++) {
-                   if(activeBuffer[z]!=NULL) {
-                        for(int w=0;w<activeNumsBuffer[z];w++) {
-                            if(activeBuffer[z][w]==activeNerves[i]->connections[j]->end) {
-                                alreadyActive=1; 
-                                break;
-                            }
-                            if(alreadyActive) break;
-                        }
-                   }
-                   if(alreadyActive) break;                   
-               }
-               //if potential is over treshold add neuron to temporary array
-               if(!alreadyActive) {
-                    Nerve* receivingNerve=activeNerves[i]->connections[j]->end;
-                    float newPotential=(float)activeNerves[i]->connections[j]->strength/(float)10;
-                    receivingNerve->potential+=newPotential*(float)55;
-    //                printf("%d: %f\n", receivingNerve->id, receivingNerve->potential);
-                    if(receivingNerve->potential>=20) {
-                        receivingNerve->potential=0;
-
-                        tempNerves[count]=receivingNerve;
-
-                        //printf("%d->%d\n", activeNerves[i]->id, activeNerves[i]->connections[j]->end->id);
-
-                        count++;
-                    }
-               }
-           }      
+       //iterate through connections and check if there is a path and sufficient potential to fire
+       int add=0;
+       for(int j=0;j<20;j++) {
+           int inThis=0; //skip connection if it was incremented in this iteration
+           for(int k=0;k<count;k++) {
+                if(nerves[j]==temp[k]) {
+                    inThis=1;
+                    break;
+                }
+           }
+           if(wrec[i][j]>0 && nerves[j]->potential>20 && !inThis && potential<20) {
+               if(i==15) printf("-%d-\n", j);
+               add=1;
+               potential+=wrec[i][j]/(float)10*(float)55; 
+           }
        }
-       //set new number of active points and fill the new active array from temporary
-       *activeNum=count;
-       for(int i=0;i<*activeNum;i++) {
-           activeNerves[i]=tempNerves[i]; 
+       //same for inputs
+       for(int j=0;j<4;j++) {
+           if(win[j][i]>0 && inputs[j]->potential>20) {
+               add=1;
+               potential+=win[j][i]/(float)10*(float)55;
+           }
+       }
+       //add neuron to temp if it received any input
+       if(add) {
+           temp[count]=nerves[i];
+           count++;
        }
 
-       for(int i=0;i<20;i++) {
-            printf("%d: %f\n", i, nerves[i]->potential);               
+       nerves[i]->potential=potential;
+   }
+   for(int i=0;i<4;i++) {
+        if(outputs[i]->potential>20)
+            outputs[i]->potential=0;
+   }
+   for(int i=0;i<4;i++) {
+       for(int j=0;j<20;j++) {
+           if(wout[j][i]>0 && nerves[j]->potential>20) {
+                outputs[i]->potential+=wout[j][i]/(float)10*(float)55; 
+           } 
+       }
+   }
 
+
+   //set inputs to 0 after firing
+   for(int i=0;i<4;i++) {
+        if(inputs[i]->potential>20)
+            inputs[i]->potential=0;
+
+        printf("%d: %f\n", i, inputs[i]->potential);               
+   }
+   //set neurons not in temp if >20 to 0
+   for(int i=0;i<20;i++) {
+        int skip=0;
+        for(int j=0;j<20;j++) {
+            if(nerves[i]==temp[j]) {
+                skip=1;
+                break;
+            }
+        }
+        if(!skip && nerves[i]->potential>20)
+            nerves[i]->potential=0;
+
+        //deacrease over time if not just incremented
+        if(!skip) {
             if(nerves[i]->potential-10>0)
                 nerves[i]->potential-=10;
             else
                 nerves[i]->potential=0;
+        }
 
-       }
-
-       printf("----\n");
-
-//       printf("%d\n", *activeNum);
-       sendPulse(activeNerves, activeNum);
+        printf("%d: %f\n", i, nerves[i]->potential);               
    }
+
+   printf("----\n");
+
+   sendPulse();
 }
+
 typedef struct _threadArgs{
     int len;
-    int* keys;
+    int* inputs;
 } threadArgs;
 
 void *thread(void *vargp) {
@@ -153,52 +215,43 @@ void *thread(void *vargp) {
 
         threadArgs* args=(threadArgs*)vargp;
         int len=args->len;
-        int* keys=args->keys;
+        int* inputsArr=args->inputs;
 
-        for(int i=0;i<5;i++) {
-            if(activeBuffer[i]==NULL) {
-                activeBuffer[i]=malloc(20*sizeof(Nerve*));
-                for(int j=0;j<len;j++) activeBuffer[i][j]=nerves[keys[j]];
-                activeNumsBuffer[i]=len;
-
-                t=i;
-
-                break; 
-            }
+        for(int i=0;i<len;i++) {
+            inputs[inputsArr[i]]->potential=22;
         }
-        sendPulse(activeBuffer[t], &activeNumsBuffer[t]);
-
-        free(activeBuffer[t]);
-        activeBuffer[t]=NULL;
-
+        sendPulse();
 
     return NULL;
 }
 
-/*
-void keyPressed(GLFWwindow* window, int key, int scancode, int action, int mods) {  
-    int keyNum=key-'0';
-    if(action==GLFW_PRESS) {
-
-    }  
-}
-*/
-
 void drawNerves() {
-    glColor4f(1.f, 1.f, 1.f, 1.f);
     for(int i=0;i<20;i++) {
-        for(int b=0;b<5;b++) {
-            for(int j=0;j<activeNumsBuffer[b];j++) {
-                if(nerves[i]==activeBuffer[b][j]) {
-                    glColor4f(1.f, 0.f, 0.f, 1.f);
-                } 
-            }
+        glColor4f(1.f, 1.f, 1.f, 0.5f);
+        if(nerves[i]->potential>20) {
+            glColor4f(1.f, 0.f, 0.f, 1.f);
         }
 
         buildCircle(0.2f, 20, nerves[i]);
-        glColor4f(1.f, 1.f, 1.f, 0.5f);
-
     }
+    for(int i=0;i<4;i++) {
+       glColor4f(0.f, 1.f, 1.f, 0.5f);
+       if(inputs[i]->potential>20) {
+            glColor4f(1.f, 0.f, 0.f, 1.f);
+       }
+
+       buildCircle(0.2f, 20, inputs[i]);
+    }
+    for(int i=0;i<4;i++) {
+       glColor4f(1.f, 0.f, 1.f, 0.5f);
+       if(outputs[i]->potential>20) {
+            glColor4f(1.f, 0.f, 0.f, 1.f);
+       }
+
+       buildCircle(0.2f, 20, outputs[i]);
+    }
+
+    drawConnections();
 }
 
 
@@ -211,7 +264,7 @@ int main() {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "GLFW CMake starter", NULL, NULL);
+    window = glfwCreateWindow(640, 480, "Nervous", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -225,13 +278,10 @@ int main() {
 
     createNerves();
 
-    //thread for every path
-    for(int i=0;i<5;i++) activeBuffer[i]=NULL;
-
     threadArgs* a=malloc(sizeof(threadArgs));
-    int aa[5]={0, 1, 4, 8, 11};
-    a->keys=aa;
-    a->len=5;
+    int aa[4]={0, 1, 2, 3};
+    a->inputs=aa;
+    a->len=4;
 
     int b=1;
     int c=1;

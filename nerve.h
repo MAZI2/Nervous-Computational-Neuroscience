@@ -9,20 +9,19 @@ typedef struct _Point {
     float x, y, z;
 } Point;
 
-struct _Connection;
-
 typedef struct _Nerve {
     float x, y;
-    struct _Connection** connections;
-    int connectionNum;
     int id;
     float potential;
 } Nerve;
 
-typedef struct _Connection {
-    Nerve* end;
-    int strength;
-} Connection;
+static Nerve** inputs;
+static Nerve** nerves;
+static Nerve** outputs;
+
+float win[4][20];
+float wrec[20][20];
+float wout[20][4];
 
 
 void buildCircle(float radius, int vCount, Nerve* nerve) {
@@ -58,29 +57,56 @@ void buildCircle(float radius, int vCount, Nerve* nerve) {
 
         glEnd();
     }
-    //drawing connections
-    Connection** connections=nerve->connections;
-
-    for(int i=0;i<nerve->connectionNum;i++) {
-       float xa=nerve->x/20;
-       float ya=-(nerve->y/20);
-       float xb=connections[i]->end->x/20;
-       float yb=-connections[i]->end->y/20;
-
-       glLineWidth(connections[i]->strength);
-       glBegin(GL_LINES);
-       glVertex3f(xa, 0.f, ya);
-       glVertex3f(xb, 0.f, yb);
-       glEnd();
-
-       float px=0.9f*(xb-xa)+xa;
-       float py=0.9f*(yb-ya)+ya;
-
-       glPointSize(3);
-       glBegin(GL_POINTS);
-       glVertex3f(px, 0.f, py);
-       glEnd();
-    }
 
     free(points);
+}
+
+void line(Nerve* start, Nerve* end, float width) {
+    float xa=start->x/20;
+    float ya=-(start->y/20);
+    float xb=end->x/20;
+    float yb=-end->y/20;
+    
+    if(start->potential>20) {
+        glColor4f(1.f, 0.f, 0.f, 1.f);
+    } else
+        glColor4f(1.f, 1.f, 1.f, 0.5f);
+
+    glLineWidth(width);
+    glBegin(GL_LINES);
+    glVertex3f(xa, 0.f, ya);
+    glVertex3f(xb, 0.f, yb);
+    glEnd();
+
+    float px=0.9f*(xb-xa)+xa;
+    float py=0.9f*(yb-ya)+ya;
+
+    glPointSize(3);
+    glBegin(GL_POINTS);
+    glVertex3f(px, 0.f, py);
+    glEnd();
+}
+
+void drawConnections() {
+    for(int i=0;i<20;i++) {
+       for(int j=0;j<20;j++) {
+            if(wrec[i][j]>0) {
+                line(nerves[i], nerves[j], wrec[i][j]);
+            }
+       }
+    }
+    for(int i=0;i<4;i++) {
+        for(int j=0;j<20;j++) {
+            if(win[i][j]>0) {
+                line(inputs[i], nerves[j], win[i][j]);
+            }
+        }
+    }
+    for(int i=0;i<20;i++) {
+        for(int j=0;j<4;j++) {
+            if(wout[i][j]>0) {
+                line(nerves[i], outputs[j], wout[i][j]);
+            }
+        }
+    }
 }
