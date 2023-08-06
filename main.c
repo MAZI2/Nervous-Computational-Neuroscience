@@ -1,4 +1,6 @@
 #include "nerve.h"
+#include "gradient.h"
+
 #include <unistd.h>
 #include <pthread.h>
 
@@ -6,6 +8,7 @@ int randInt(int lower, int upper) {
     int num = (rand() % (upper - lower + 1)) + lower;
     return num;
 }
+
 
 void createConnections() {
     for(int i=0;i<20;i++) {
@@ -34,20 +37,9 @@ void createConnections() {
                 y=randInt(-1, 1);
 
             if(x!=0||y!=0) {
-                /*
-                Connection* newConnection=malloc(sizeof(Connection));
-                newConnection->end=nerves[i+y*5+x];
-                newConnection->strength=randInt(1, 3);
+                wrec[i][i+y*5+x]=randInt(-3, 3);
 
-                conn[valid]=newConnection;
-                printf("%d(%d) ", i+y*5+x, newConnection->strength);
-                
-                valid++;
-                */
-
-                wrec[i][i+y*5+x]=randInt(1, 3);
-               printf("%d(%f) ", i+y*5+x, wrec[i][i+y*5+x]);
-
+                printf("%d(%f) ", i+y*5+x, wrec[i][i+y*5+x]);
             }
         }
         printf("\n");
@@ -57,7 +49,7 @@ void createConnections() {
         */
     }
     for(int i=0;i<4;i++) {
-        printf("%d: ", i);
+        printf("I%d: ", i);
         for(int j=0;j<4;j++) {
             win[i][j*5]=randInt(0, 3);
             if(win[i][j*5]>0)
@@ -71,7 +63,7 @@ void createConnections() {
         for(int j=0;j<4;j++) {
             wout[i][j]=randInt(0, 3);
             if(wout[i][j]>0)
-                printf("%d(%f) ", j, wout[i][j]);
+                printf("O%d(%f) ", j, wout[i][j]);
 
         }
         printf("\n");
@@ -120,9 +112,9 @@ void sendPulse() {//Nerve** activeNerves, int* activeNum) {
     usleep(1000000);
 
    Nerve* temp[20];
+   int anyActivity=0;
 
    int count=0;
-
    for(int i=0;i<20;i++) {
        float potential=nerves[i]->potential;
 
@@ -136,17 +128,27 @@ void sendPulse() {//Nerve** activeNerves, int* activeNum) {
                     break;
                 }
            }
-           if(wrec[i][j]>0 && nerves[j]->potential>20 && !inThis && potential<20) {
-               if(i==15) printf("-%d-\n", j);
+
+           if(wrec[j][i]!=0 && nerves[j]->potential>20 && !inThis && potential<20) {
                add=1;
-               potential+=wrec[i][j]/(float)10*(float)55; 
+               potential+=wrec[j][i]/(float)10*(float)55; 
+               if(potential<0) potential=0;
+
+               printf("%d -> %d (%f) %f\n", j, i, wrec[j][i]/(float)10*(float)55, potential);
+
+               anyActivity=1;
            }
        }
        //same for inputs
        for(int j=0;j<4;j++) {
-           if(win[j][i]>0 && inputs[j]->potential>20) {
+           if(win[j][i]!=0 && inputs[j]->potential>20) {
                add=1;
+
                potential+=win[j][i]/(float)10*(float)55;
+               if(potential<0) potential=0;
+
+               printf("i%d -> %d (%f) %f\n", j, i, win[j][i]/(float)10*(float)55, potential);
+               anyActivity=1;
            }
        }
        //add neuron to temp if it received any input
@@ -161,13 +163,22 @@ void sendPulse() {//Nerve** activeNerves, int* activeNum) {
         if(outputs[i]->potential>20)
             outputs[i]->potential=0;
    }
+
+   int notNullOutput=0; 
+
    for(int i=0;i<4;i++) {
        for(int j=0;j<20;j++) {
            if(wout[j][i]>0 && nerves[j]->potential>20) {
-                outputs[i]->potential+=wout[j][i]/(float)10*(float)55; 
+               notNullOutput=1;
+               outputs[i]->potential+=wout[j][i]/(float)10*(float)55; 
            } 
        }
+
    }
+   //terminate?
+   if(notNullOutput) evaluate();
+   else if(!anyActivity) evaluate();
+
 
 
    //set inputs to 0 after firing
@@ -175,7 +186,7 @@ void sendPulse() {//Nerve** activeNerves, int* activeNum) {
         if(inputs[i]->potential>20)
             inputs[i]->potential=0;
 
-        printf("%d: %f\n", i, inputs[i]->potential);               
+//        printf("%d: %f\n", i, inputs[i]->potential);               
    }
    //set neurons not in temp if >20 to 0
    for(int i=0;i<20;i++) {
@@ -197,12 +208,39 @@ void sendPulse() {//Nerve** activeNerves, int* activeNum) {
                 nerves[i]->potential=0;
         }
 
-        printf("%d: %f\n", i, nerves[i]->potential);               
+//        printf("%d: %f\n", i, nerves[i]->potential);               
    }
 
    printf("----\n");
 
-   sendPulse();
+   if(anyActivity)
+        sendPulse();
+   else {
+        int reset=1;
+        for(int i=0;i<20;i++) {
+            if(nerves[i]->potential>0) {
+                reset=0;
+                break;
+            }
+        } 
+        if(reset) {
+            for(int i=0;i<4;i++) {
+                if(outputs[i]->potential>0) {
+                    reset=0;
+                    break;
+                }
+            }
+            //make array of inputs global!
+            if(reset) {
+                int inputArr[4]={1, 0, 1, 0};
+                for(int i=0;i<4;i++) {
+                   if(inputArr[i]) inputs[i]->potential=21; 
+                }    
+                sendPulse();
+            }
+        }
+        
+   }
 }
 
 typedef struct _threadArgs{
@@ -219,7 +257,9 @@ void *thread(void *vargp) {
 
         for(int i=0;i<len;i++) {
             inputs[inputsArr[i]]->potential=22;
+            firedInputs[i]=inputsArr[i];
         }
+        numFired=len;
         sendPulse();
 
     return NULL;
@@ -279,9 +319,9 @@ int main() {
     createNerves();
 
     threadArgs* a=malloc(sizeof(threadArgs));
-    int aa[4]={0, 1, 2, 3};
+    int aa[2]={0, 2};
     a->inputs=aa;
-    a->len=4;
+    a->len=2;
 
     int b=1;
     int c=1;
