@@ -9,19 +9,25 @@ typedef struct _Point {
     float x, y, z;
 } Point;
 
+//need struct for vidual distribution
 typedef struct _Nerve {
     float x, y;
     int id;
     float potential;
+    float multiplier;
 } Nerve;
 
 static Nerve** inputs;
 static Nerve** nerves;
 static Nerve** outputs;
 
-float win[4][20];
+int inNum=2;
+int outNum=2;
+int recNum=20;
+
+float win[2][20];
 float wrec[20][20];
-float wout[20][4];
+float wout[20][2];
 
 
 void buildCircle(float radius, int vCount, Nerve* nerve) {
@@ -68,11 +74,10 @@ void line(Nerve* start, Nerve* end, float width) {
     float yb=-end->y/20;
     
     if(start->potential>20) {
-        glColor4f(1.f, 0.f, 0.f, 1.f);
+        glColor4f(1.f, 0.f, 0.f, 1.f*width);
     } else
-        glColor4f(1.f, 1.f, 1.f, 0.5f);
+        glColor4f(1.f, 1.f, 1.f, 0.5f*width);
 
-    glLineWidth(width);
     glBegin(GL_LINES);
     glVertex3f(xa, 0.f, ya);
     glVertex3f(xb, 0.f, yb);
@@ -88,22 +93,25 @@ void line(Nerve* start, Nerve* end, float width) {
 }
 
 void drawConnections() {
-    for(int i=0;i<20;i++) {
-       for(int j=0;j<20;j++) {
+    //recurrent
+    for(int i=0;i<recNum;i++) {
+       for(int j=0;j<recNum;j++) {
             if(wrec[i][j]>0) {
                 line(nerves[i], nerves[j], wrec[i][j]);
             }
        }
     }
-    for(int i=0;i<4;i++) {
-        for(int j=0;j<20;j++) {
+    //inputs
+    for(int i=0;i<inNum;i++) {
+        for(int j=0;j<recNum;j++) {
             if(win[i][j]>0) {
                 line(inputs[i], nerves[j], win[i][j]);
             }
         }
     }
-    for(int i=0;i<20;i++) {
-        for(int j=0;j<4;j++) {
+    //outputs
+    for(int i=0;i<recNum;i++) {
+        for(int j=0;j<inNum;j++) {
             if(wout[i][j]>0) {
                 line(nerves[i], outputs[j], wout[i][j]);
             }
