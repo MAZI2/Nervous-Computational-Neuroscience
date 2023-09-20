@@ -1,6 +1,6 @@
-int prev[20];
+int prev[40];
 int fired=0;
-int tempPrev[20];
+int tempPrev[40];
 int tempFired=0;
 
 void adjustConnections() {

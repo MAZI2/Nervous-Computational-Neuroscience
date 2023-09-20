@@ -10,7 +10,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    usleep(timer);
 
-   Nerve* temp[20];
+   Nerve* temp[40];
    int anyActivity=0;
 
    //incremented
@@ -104,9 +104,9 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    //dopamine and second phase
    if(outputActivity==1) {
-       if(counter>50)  {
+       if(counter>100)  {
            phase=1;
-           timer=250000;
+           timer=100000;
        }
 
        printf("COUNTER %d\n", counter);
@@ -126,9 +126,9 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    if(phase==0) {
        if(inp==1) {
             inputs[0]->potential=21;
-            nerves[3]->potential=21;
-            temp[count]=nerves[3];
-            tempPrev[tempFired]=3;
+            nerves[4]->potential=21;
+            temp[count]=nerves[4];
+            tempPrev[tempFired]=4;
             tempFired++;
             count++;
             inp=0;
@@ -163,8 +163,8 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
         //deacrease over time if not in temp
         if(!skip) {
-            if(nerves[i]->potential-0.7f>0)
-                nerves[i]->potential-=0.7f;
+            if(nerves[i]->potential-0.3f>0)
+                nerves[i]->potential-=0.3f;
             else
                 nerves[i]->potential=0;
         }

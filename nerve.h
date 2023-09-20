@@ -23,11 +23,11 @@ static Nerve** outputs;
 
 int inNum=2;
 int outNum=2;
-int recNum=20;
+int recNum=40;
 
-float win[2][20];
-float wrec[20][20];
-float wout[20][2];
+float win[2][40];
+float wrec[40][40];
+float wout[40][2];
 
 
 void buildCircle(float radius, int vCount, Nerve* nerve) {

@@ -73,51 +73,55 @@ void createConnections() {
     //all connected
     for(int i=0;i<inNum;i++) {
         win[0][0]=1.5f;
-        win[0][5]=1.5f;
-        win[0][10]=1.5f;
+        win[0][8]=1.5f;
+        win[0][16]=1.5f;
 
-        win[1][5]=1.5f;
-        win[1][10]=1.5f;
-        win[1][15]=1.5f;
+        win[1][16]=1.5f;
+        win[1][24]=1.5f;
+        win[1][32]=1.5f;
     }
     for(int i=4;i<recNum;i+=5) {
-        wout[4][0]=1.5f;
-        wout[9][0]=1.5f;
-        wout[14][0]=1.5f;
+        wout[7][0]=1.5f;
+        wout[15][0]=1.5f;
+        wout[23][0]=1.5f;
 
-        wout[9][1]=1.5f;
-        wout[14][1]=1.5f;
-        wout[19][1]=1.5f;
+        wout[23][1]=1.5f;
+        wout[31][1]=1.5f;
+        wout[39][1]=1.5f;
     }
     //for now feedforward
     for(int i=0;i<recNum;i++) {
-        if((i-4)%5!=0 && i!=3) {
-            if(i-5>=0) {
-                wrec[i][i-5+1]=1.5f;
-                printf("%d->%d ", i, i-5+1);
+        if((i-7)%8!=0 && i!=4 && i!=5) {
+            if(i-8>=0) {
+                wrec[i][i-8+1]=1.5f;
+                printf("%d->%d ", i, i-8+1);
             }
 
             wrec[i][i+1]=1.5f;
             printf("%d->%d ", i, i+1);
 
-            if(i+5<20) {
-                wrec[i][i+5+1]=1.5f;
-                printf("%d->%d\n", i, i+5+1);
+            if(i+8<40) {
+                wrec[i][i+8+1]=1.5f;
+                printf("%d->%d\n", i, i+8+1);
             } else 
                 printf("\n");
 
             //training
-        } else if(i==3) {
-           wrec[3][4]=2.5f; 
+        } else if(i==4) {
+           wrec[4][5]=4.5f; 
+           wrec[4][13]=3.5f;
+        } else if(i==5) {
+           wrec[5][6]=4.5f;
+           wrec[5][14]=3.5f;
         }
     }
 }
 
 void createNerves() {
    int count=0;
-   nerves=malloc(20*sizeof(Nerve*));
-   for(int i=0;i<4;i++) {
-        for(int j=0;j<5;j++) {
+   nerves=malloc(recNum*sizeof(Nerve*));
+   for(int i=0;i<5;i++) {
+        for(int j=0;j<8;j++) {
             Nerve* new=malloc(sizeof(Nerve));
             new->x=j*75-150;
             new->y=i*75-100;
@@ -145,7 +149,7 @@ void createNerves() {
    outputs=malloc(outNum*sizeof(Nerve*));
    for(int i=0;i<outNum;i++) {
         Nerve* new=malloc(sizeof(Nerve));
-        new->x=250;
+        new->x=550;
         new->y=i*75-100;
         new->id=i;
         new->potential=0;
@@ -180,7 +184,7 @@ void *thread(void *vargp) {
 }
 
 void drawNerves() {
-    for(int i=0;i<20;i++) {
+    for(int i=0;i<recNum;i++) {
         glColor4f(1.f, 1.f, 1.f, 0.5f);
         if(nerves[i]->potential>20) {
             glColor4f(1.f, 0.f, 0.f, 1.f);
@@ -218,7 +222,7 @@ int main() {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Nervous", NULL, NULL);
+    window = glfwCreateWindow(1280, 480, "Nervous", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
