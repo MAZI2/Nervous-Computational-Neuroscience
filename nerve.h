@@ -9,27 +9,6 @@ typedef struct _Point {
     float x, y, z;
 } Point;
 
-//need struct for vidual distribution
-typedef struct _Nerve {
-    float x, y;
-    int id;
-    float potential;
-    float multiplier;
-} Nerve;
-
-static Nerve** inputs;
-static Nerve** nerves;
-static Nerve** outputs;
-
-int inNum=2;
-int outNum=2;
-int recNum=40;
-
-float win[2][40];
-float wrec[40][40];
-float wout[40][2];
-
-
 void buildCircle(float radius, int vCount, Nerve* nerve) {
     float cx=nerve->x;
     float cy=nerve->y;
@@ -117,4 +96,33 @@ void drawConnections() {
             }
         }
     }
+}
+
+void drawNerves() {
+    for(int i=0;i<recNum;i++) {
+        glColor4f(1.f, 1.f, 1.f, 0.5f);
+        if(nerves[i]->potential>20) {
+            glColor4f(1.f, 0.f, 0.f, 1.f);
+        }
+
+        buildCircle(0.2f, 20, nerves[i]);
+    }
+    for(int i=0;i<inNum;i++) {
+       glColor4f(0.f, 1.f, 1.f, 0.5f);
+       if(inputs[i]->potential>20) {
+            glColor4f(1.f, 0.f, 0.f, 1.f);
+       }
+
+       buildCircle(0.2f, 20, inputs[i]);
+    }
+    for(int i=0;i<outNum;i++) {
+       glColor4f(1.f, 0.f, 1.f, 0.5f);
+       if(outputs[i]->potential>20) {
+            glColor4f(1.f, 0.f, 0.f, 1.f);
+       }
+
+       buildCircle(0.2f, 20, outputs[i]);
+    }
+
+    drawConnections();
 }
