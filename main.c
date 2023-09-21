@@ -33,6 +33,8 @@ void *thread(void *vargp) {
 }
 
 int main() {
+
+    srand(3);
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -55,7 +57,7 @@ int main() {
     createNerves();
 
     threadArgs* a=malloc(sizeof(threadArgs));
-    int aa[1]={0};
+    int aa[1]={1};
     a->inputs=aa;
     a->len=1;
 

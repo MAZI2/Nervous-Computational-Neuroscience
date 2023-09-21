@@ -85,7 +85,7 @@ void createConnections() {
     }
     //for now feedforward
     for(int i=0;i<recNum;i++) {
-        if((i-7)%8!=0 && i!=4 && i!=5) {
+        if((i-7)%8!=0) {
             if(i-8>=0) {
                 wrec[i][i-8+1]=1.5f;
                 printf("%d->%d ", i, i-8+1);
@@ -100,15 +100,14 @@ void createConnections() {
             } else 
                 printf("\n");
 
-            //training
-        } else if(i==4) {
-           wrec[4][5]=4.5f; 
-           wrec[4][13]=3.5f;
-        } else if(i==5) {
-           wrec[5][6]=4.5f;
-           wrec[5][14]=3.5f;
-        }
+        } 
+
     }
+    
+   //training
+   wrec[28][37]=6.5f;
+   wrec[28][29]=6.5f;
+   wrec[38][31]=6.5f;
 }
 
 void createNerves() {
@@ -122,7 +121,20 @@ void createNerves() {
             new->id=count;
             new->potential=0;
 
-            new->multiplier=1;
+            new->neuronType=1;
+            new->multiplier=1.f;
+
+            int type=randInt(0, 2);
+            if(type==0) {
+                printf("%d\n", i*8+j);
+                new->neuronType=-1;
+                new->multiplier=-1.f;
+            }
+
+            new->receptorType=1;
+            int receptor=randInt(0, 1);
+            if(receptor==0)
+                new->receptorType=-1;
 
             nerves[count]=new;
             count++;
@@ -136,7 +148,9 @@ void createNerves() {
         new->id=i;
         new->potential=0;
 
-        new->multiplier=1;
+        new->neuronType=1;
+        new->receptorType=1;
+        new->multiplier=1.f;
 
         inputs[i]=new;
    }
@@ -148,7 +162,9 @@ void createNerves() {
         new->id=i;
         new->potential=0;
 
-        new->multiplier=1; 
+        new->neuronType=1;
+        new->receptorType=1;
+        new->multiplier=1.f; 
 
         outputs[i]=new;
    }

@@ -46,16 +46,47 @@ void buildCircle(float radius, int vCount, Nerve* nerve) {
     free(points);
 }
 
+void buildCircleOutline(float radius, int vCount, Nerve* nerve) {
+    float cx=nerve->x;
+    float cy=nerve->y;
+
+    float angle=(2*M_PI)/vCount;
+    float tangetial_factor=tanf(angle);
+    float radial_factor=cosf(angle);
+
+    float x=radius;
+    float y=0;
+
+    glLineWidth(1.5f);
+    glBegin(GL_LINE_LOOP);
+    for(int i=0;i<vCount;i++) {
+        glVertex3f(x + cx/20, 0.f, y - cy/20);
+
+        float tx=-y;
+        float ty=x;
+
+        x+=tx*tangetial_factor;
+        y+=ty*tangetial_factor;
+
+        x*=radial_factor;
+        y*=radial_factor;
+    }
+
+    glEnd();
+}
+
 void line(Nerve* start, Nerve* end, float width) {
     float xa=start->x/20;
     float ya=-(start->y/20);
     float xb=end->x/20;
     float yb=-end->y/20;
     
-    if(start->potential>20) {
+    if(start->potential>threshold) {
         glColor4f(1.f, 0.f, 0.f, 1.f*width);
     } else
         glColor4f(1.f, 1.f, 1.f, 0.5f*width);
+
+    glLineWidth(1);
 
     glBegin(GL_LINES);
     glVertex3f(xa, 0.f, ya);
@@ -99,17 +130,28 @@ void drawConnections() {
 }
 
 void drawNerves() {
+
+    drawConnections();
     for(int i=0;i<recNum;i++) {
         glColor4f(1.f, 1.f, 1.f, 0.5f);
-        if(nerves[i]->potential>20) {
+        if(nerves[i]->receptorType==-1)
+            glColor4f(0.f, 1.f, 1.f, 1.f);
+
+        if(nerves[i]->potential>threshold) {
             glColor4f(1.f, 0.f, 0.f, 1.f);
         }
 
-        buildCircle(0.2f, 20, nerves[i]);
+        if(nerves[i]->neuronType==-1) {
+            buildCircleOutline(0.2f, 20, nerves[i]);
+            glColor4f(0.f, 0.f, 0.f, 1.f);
+            buildCircle(0.15f, 20, nerves[i]);
+
+        } else
+            buildCircle(0.2f, 20, nerves[i]);
     }
     for(int i=0;i<inNum;i++) {
        glColor4f(0.f, 1.f, 1.f, 0.5f);
-       if(inputs[i]->potential>20) {
+       if(inputs[i]->potential>threshold) {
             glColor4f(1.f, 0.f, 0.f, 1.f);
        }
 
@@ -117,12 +159,11 @@ void drawNerves() {
     }
     for(int i=0;i<outNum;i++) {
        glColor4f(1.f, 0.f, 1.f, 0.5f);
-       if(outputs[i]->potential>20) {
+       if(outputs[i]->potential>threshold) {
             glColor4f(1.f, 0.f, 0.f, 1.f);
        }
 
        buildCircle(0.2f, 20, outputs[i]);
     }
 
-    drawConnections();
 }

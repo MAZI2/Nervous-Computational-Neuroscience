@@ -5,6 +5,26 @@ int phase=0;
 int counter=0;
 int timer=100000;
 
+int avg[10]={0,0,0,0,0,0,0,0,0,0};
+int avgCount=0;
+
+float activityAvg(int newFired) {
+    if(avgCount<10) {
+        avg[avgCount]=newFired;
+        avgCount++;
+    } else {
+        for(int i=0;i<9;i++) {
+            avg[i]=avg[i+1];
+        }
+        avg[9]=newFired;
+    }
+    int sum=0;
+    for(int i=0;i<10;i++)
+        sum+=avg[i];
+
+    return sum/10.f;
+}
+
 void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    tempFired=0;
 
@@ -19,12 +39,14 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    //reccurent nerves iteration
    for(int i=0;i<recNum;i++) {
        float potential=nerves[i]->potential;
-       float multiplier=nerves[i]->multiplier;
+       int receptorType=nerves[i]->receptorType;
        //iterate through connections and check if there is a path and sufficient potential to fire
 
        //was current neuron incremented
        int add=0;
        for(int j=0;j<recNum;j++) {
+            
+           float multiplier=nerves[j]->multiplier;
            //skip connection if it was incremented in this iteration
            int inThis=0;            
            for(int k=0;k<count;k++) {
@@ -34,9 +56,13 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
                 }
            }
 
-           if(wrec[j][i]!=0 && nerves[j]->potential>20 && !inThis && potential<20) {
+           if(wrec[j][i]!=0 && nerves[j]->potential>threshold && !inThis && potential<threshold) {
                add=1;
-               potential+=(wrec[j][i]/(float)10*(float)55)*multiplier; 
+
+               if(receptorType==1) 
+                    potential+=(wrec[j][i]/(float)10*(float)55)*multiplier*dopamine; 
+               else
+                    potential+=((wrec[j][i]/(float)10*(float)55)*multiplier)/dopamine;
                if(potential<0) potential=0;
 
                //printf("R %d -> %d (%f) %f\n", j, i, wrec[j][i]/(float)10*(float)55, potential);
@@ -45,7 +71,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
                anyActivity=1;
                
                //add to fired
-               if(potential>20) {
+               if(potential>threshold) {
                     tempPrev[tempFired]=i;
                     tempFired++;
                }
@@ -54,17 +80,23 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
        //same for inputs
        for(int j=0;j<inNum;j++) {
-           if(win[j][i]!=0 && inputs[j]->potential>20) {
+           float multiplier=inputs[j]->multiplier;
+           
+           if(win[j][i]!=0 && inputs[j]->potential>threshold) {
                add=1;
 
-               potential+=(win[j][i]/(float)10*(float)55)*multiplier;
+               if(receptorType==1) 
+                    potential+=(win[j][i]/(float)10*(float)55)*multiplier*dopamine;
+               else
+                    potential+=((win[j][i]/(float)10*(float)55)*multiplier)/dopamine;
+
                if(potential<0) potential=0;
 
                //printf("I %d -> %d (%f) %f\n", j, i, win[j][i]/(float)10*(float)55, potential);
                anyActivity=1;
 
                //add to fired
-               if(potential>20) {
+               if(potential>threshold) {
                     tempPrev[tempFired]=i;
                     tempFired++;
                }
@@ -75,6 +107,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
        //add neuron to temp if it received any input
        if(add) {
+           //printf("%d\n", i);
            temp[count]=nerves[i];
            count++;
        }
@@ -84,7 +117,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    //set output to 0 if it fired
    for(int i=0;i<outNum;i++) {
-        if(outputs[i]->potential>20)
+        if(outputs[i]->potential>threshold)
             outputs[i]->potential=0;
    }
 
@@ -93,29 +126,31 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    //increment output neurons
    for(int i=0;i<outNum;i++) {
        for(int j=0;j<recNum;j++) {
-           if(wout[j][i]>0 && nerves[j]->potential>20) {
-               if(i==0)
+           float multiplier=nerves[j]->multiplier;
+
+           if(wout[j][i]>0 && nerves[j]->potential>threshold) {
+               if(i==1)
                    outputActivity=1;
 
-               outputs[i]->potential+=wout[j][i]/(float)10*(float)55; 
+               outputs[i]->potential+=wout[j][i]/(float)10*(float)55*multiplier; 
            } 
        }
    }
 
    //dopamine and second phase
    if(outputActivity==1) {
-       if(counter>100)  {
+       if(counter>300)  {
            phase=1;
            timer=100000;
        }
 
-       printf("COUNTER %d\n", counter);
+//       printf("COUNTER %d\n", counter);
        counter++;
    }
 
    //set inputs to 0 after firing
    for(int i=0;i<inNum;i++) {
-       if(inputs[i]->potential>20)
+       if(inputs[i]->potential>threshold)
            inputs[i]->potential=0;
             
 
@@ -125,10 +160,18 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    if(phase==0) {
        if(inp==1) {
-            inputs[0]->potential=21;
-            nerves[4]->potential=21;
-            temp[count]=nerves[4];
-            tempPrev[tempFired]=4;
+            inputs[1]->potential=21;
+            nerves[29]->potential=21;
+            nerves[38]->potential=21;
+
+            temp[count]=nerves[29];
+            count++;
+            temp[count]=nerves[38];
+
+            tempPrev[tempFired]=29;
+            tempFired++;
+            tempPrev[tempFired]=38;
+
             tempFired++;
             count++;
             inp=0;
@@ -137,9 +180,8 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
             inp=1;
        }
    } else {
-       nerves[14]->multiplier=1.5f;
        if(inp==3) {
-           inputs[0]->potential=21;
+           inputs[1]->potential=21;
             inp=0;
             anyActivity=1;
        } else {
@@ -148,7 +190,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
        }
    }
 
-   //set neurons not in temp if >20 to 0
+   //set neurons not in temp if >threshold to 0
    for(int i=0;i<recNum;i++) {
         int skip=0;
         for(int j=0;j<recNum;j++) {
@@ -158,7 +200,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
             }
         }
 
-        if(!skip && nerves[i]->potential>20)
+        if(!skip && nerves[i]->potential>threshold)
             nerves[i]->potential=0;
 
         //deacrease over time if not in temp
@@ -172,10 +214,12 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 //        printf("%d: %f\n", i, nerves[i]->potential);               
    }
 
-   printf("----\n");
+//   printf("----\n");
 
    if(anyActivity) {
-        adjustConnections();
+       float act=activityAvg(tempFired);
+       printf("%f\n", act);
+       adjustConnections();
         sendPulse();
    } else {
         int reset=1;
