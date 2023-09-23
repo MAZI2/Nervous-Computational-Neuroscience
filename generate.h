@@ -67,66 +67,76 @@ void createConnections() {
     //all connected
     for(int i=0;i<inNum;i++) {
         win[0][0]=1.5f;
-        win[0][8]=1.5f;
-        win[0][16]=1.5f;
+        win[0][10]=1.5f;
+        win[0][20]=1.5f;
+        win[0][30]=1.5f;
+        win[0][40]=1.5f;
 
-        win[1][16]=1.5f;
-        win[1][24]=1.5f;
-        win[1][32]=1.5f;
+        win[1][50]=1.5f;
+        win[1][60]=1.5f;
+        win[1][70]=1.5f;
+        win[1][80]=1.5f;
+        win[1][90]=1.5f;
+
+
     }
     for(int i=4;i<recNum;i+=5) {
-        wout[7][0]=1.5f;
-        wout[15][0]=1.5f;
-        wout[23][0]=1.5f;
+        wout[9][0]=1.5f;
+        wout[19][0]=1.5f;
+        wout[29][0]=1.5f;
+        wout[39][0]=1.5f;
+        wout[49][0]=1.5f;
 
-        wout[23][1]=1.5f;
-        wout[31][1]=1.5f;
-        wout[39][1]=1.5f;
+        wout[59][1]=1.5f;
+        wout[69][1]=1.5f;
+        wout[79][1]=1.5f;
+        wout[89][1]=1.5f;
+        wout[99][1]=1.5f;
     }
     //for now feedforward
     for(int i=0;i<recNum;i++) {
-        if((i-7)%8!=0) {
-            if(i-8>=0) {
-                wrec[i][i-8+1]=1.5f;
-                printf("%d->%d ", i, i-8+1);
+        if((i-recX+1)%recX!=0) {
+            if(i-recX>=0) {
+                wrec[i][i-recX+1]=1.5f;
+                //printf("%d->%d ", i, i-recX+1);
             }
 
             wrec[i][i+1]=1.5f;
-            printf("%d->%d ", i, i+1);
+            //printf("%d->%d ", i, i+1);
 
-            if(i+8<40) {
-                wrec[i][i+8+1]=1.5f;
-                printf("%d->%d\n", i, i+8+1);
-            } else 
-                printf("\n");
+            if(i+recX<recNum) {
+                wrec[i][i+recX+1]=1.5f;
+                //printf("%d->%d\n", i, i+recX+1);
+            } else {}
+                //printf("\n");
 
         } 
 
     }
     
    //training
-   wrec[28][37]=6.5f;
-   wrec[28][29]=6.5f;
-   wrec[38][31]=6.5f;
+   /* wrec[28][37]=6.5f; */
+   /* wrec[28][29]=6.5f; */
+   /* wrec[38][31]=6.5f; */
 }
 
 void createNerves() {
    int count=0;
    nerves=malloc(recNum*sizeof(Nerve*));
-   for(int i=0;i<5;i++) {
-        for(int j=0;j<8;j++) {
+   for(int i=0;i<recY;i++) {
+        for(int j=0;j<recX;j++) {
             Nerve* new=malloc(sizeof(Nerve));
-            new->x=j*75-150;
-            new->y=i*75-100;
+            new->x=j*50-150;
+            new->y=i*50-230;
             new->id=count;
             new->potential=0;
 
             new->neuronType=1;
             new->multiplier=1.f;
 
-            int type=randInt(0, 2);
+            int type=randInt(0, 3);
             if(type==0) {
-                printf("%d\n", i*8+j);
+                //printf("%d\n", i*8+j);
                 new->neuronType=-1;
                 new->multiplier=-1.f;
             }
@@ -144,7 +154,7 @@ void createNerves() {
    for(int i=0;i<inNum;i++) {
         Nerve* new=malloc(sizeof(Nerve));
         new->x=-250;
-        new->y=i*75-100;
+        new->y=i*200-100;
         new->id=i;
         new->potential=0;
 
@@ -157,8 +167,8 @@ void createNerves() {
    outputs=malloc(outNum*sizeof(Nerve*));
    for(int i=0;i<outNum;i++) {
         Nerve* new=malloc(sizeof(Nerve));
-        new->x=550;
-        new->y=i*75-100;
+        new->x=400;
+        new->y=i*200-100;
         new->id=i;
         new->potential=0;
 

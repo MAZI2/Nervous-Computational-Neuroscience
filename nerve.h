@@ -135,7 +135,7 @@ void drawNerves() {
     for(int i=0;i<recNum;i++) {
         glColor4f(1.f, 1.f, 1.f, 0.5f);
         if(nerves[i]->receptorType==-1)
-            glColor4f(0.f, 1.f, 1.f, 1.f);
+            glColor4f(1.f, 0.f, 1.f, 0.5f);
 
         if(nerves[i]->potential>threshold) {
             glColor4f(1.f, 0.f, 0.f, 1.f);
@@ -158,7 +158,7 @@ void drawNerves() {
        buildCircle(0.2f, 20, inputs[i]);
     }
     for(int i=0;i<outNum;i++) {
-       glColor4f(1.f, 0.f, 1.f, 0.5f);
+       glColor4f(1.f, 1.f, 1.f, 0.5f);
        if(outputs[i]->potential>threshold) {
             glColor4f(1.f, 0.f, 0.f, 1.f);
        }

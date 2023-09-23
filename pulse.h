@@ -30,7 +30,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    usleep(timer);
 
-   Nerve* temp[40];
+   Nerve* temp[100];
    int anyActivity=0;
 
    //incremented
@@ -139,6 +139,9 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    //dopamine and second phase
    if(outputActivity==1) {
+       if(reward)
+            dopamine=1.8f;
+
        if(counter>300)  {
            phase=1;
            timer=100000;
@@ -146,6 +149,9 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
 //       printf("COUNTER %d\n", counter);
        counter++;
+   } else if(dopamine>1.f) {
+        dopamine-=0.05f;
+        printf("D: %f\n", dopamine);
    }
 
    //set inputs to 0 after firing
@@ -160,24 +166,24 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    if(phase==0) {
        if(inp==1) {
-            inputs[1]->potential=21;
-            nerves[29]->potential=21;
-            nerves[38]->potential=21;
+           inputs[1]->potential=21;
 
-            temp[count]=nerves[29];
-            count++;
-            temp[count]=nerves[38];
+           for(int i=0;i<trainNum;i++) {
+                //purpose of thread args ... ??
+                int a=trainingNerves[i];
 
-            tempPrev[tempFired]=29;
-            tempFired++;
-            tempPrev[tempFired]=38;
+                nerves[a]->potential=21; 
+                temp[count]=nerves[a]; 
 
-            tempFired++;
-            count++;
-            inp=0;
-            anyActivity=1;
+                tempPrev[tempFired]=a; 
+
+                tempFired++; 
+                count++;
+           }
+           inp=0;
+           anyActivity=1;
        } else {
-            inp=1;
+           inp=1;
        }
    } else {
        if(inp==3) {
@@ -218,7 +224,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    if(anyActivity) {
        float act=activityAvg(tempFired);
-       printf("%f\n", act);
+       //printf("%f\n", act);
        adjustConnections();
         sendPulse();
    } else {

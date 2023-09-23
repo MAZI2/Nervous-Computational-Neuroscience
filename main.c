@@ -34,7 +34,7 @@ void *thread(void *vargp) {
 
 int main() {
 
-    srand(3);
+    srand(8);
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -42,7 +42,7 @@ int main() {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1280, 480, "Nervous", NULL, NULL);
+    window = glfwCreateWindow(1500, 700, "Nervous", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -54,7 +54,21 @@ int main() {
     int width, height;
     double cx, cy;
 
+
     createNerves();
+    for(int i=0;i<trainNum;i++) {
+        trainingNerves[i]=randInt(50, 99);
+    }
+
+    if(restore) {
+        FILE* saved=fopen("saved.txt", "r");
+        for(int i=0;i<recNum;i++) {
+            for(int j=0;j<recNum;j++) {
+                fscanf(saved, "%f", &wrec[i][j]);
+            }
+        }
+        fclose(saved);
+    }
 
     threadArgs* a=malloc(sizeof(threadArgs));
     int aa[1]={1};

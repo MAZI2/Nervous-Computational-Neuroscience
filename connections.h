@@ -1,9 +1,12 @@
-int prev[40];
+int prev[100];
 int fired=0;
-int tempPrev[40];
+int tempPrev[100];
 int tempFired=0;
 
 void adjustConnections() {
+    FILE* saved=fopen("saved.txt", "w");
+    if(saved==NULL) printf("error\n");
+
     for(int i=0;i<fired;i++) {
         for(int j=0;j<tempFired;j++) {
             int a=prev[i];
@@ -39,5 +42,12 @@ void adjustConnections() {
         prev[i]=tempPrev[i];
     }
     fired=tempFired;
+
+    for(int i=0;i<recNum;i++) {
+        for(int j=0;j<recNum;j++) {
+           fprintf(saved, "%f ", wrec[i][j]); 
+        }
+    }
     
+    fclose(saved);
 }
