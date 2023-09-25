@@ -98,6 +98,8 @@ void createConnections() {
         if((i-recX+1)%recX!=0) {
             if(i-recX>=0) {
                 wrec[i][i-recX+1]=1.5f;
+                if((i-recX+2)%recX!=0)
+                    wrec[i][i-recX+2]=1.5f;
                 //printf("%d->%d ", i, i-recX+1);
             }
 
@@ -106,6 +108,9 @@ void createConnections() {
 
             if(i+recX<recNum) {
                 wrec[i][i+recX+1]=1.5f;
+                if((i+recX+1)<recNum && (i+recX+2)%recX!=0)
+                    wrec[i][i+recX+2]=1.5f;
+
                 //printf("%d->%d\n", i, i+recX+1);
             } else {}
                 //printf("\n");
@@ -134,7 +139,7 @@ void createNerves() {
             new->neuronType=1;
             new->multiplier=1.f;
 
-            int type=randInt(0, 3);
+            int type=randInt(0, 2);
             if(type==0) {
                 //printf("%d\n", i*8+j);
                 new->neuronType=-1;

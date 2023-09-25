@@ -34,7 +34,7 @@ void *thread(void *vargp) {
 
 int main() {
 
-    srand(8);
+    srand(11);
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -57,7 +57,7 @@ int main() {
 
     createNerves();
     for(int i=0;i<trainNum;i++) {
-        trainingNerves[i]=randInt(50, 99);
+        trainingNerves[i]=6;//randInt(50, 99);
     }
 
     if(restore) {

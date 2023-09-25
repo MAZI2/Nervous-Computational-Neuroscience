@@ -129,18 +129,23 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
            float multiplier=nerves[j]->multiplier;
 
            if(wout[j][i]>0 && nerves[j]->potential>threshold) {
-               if(i==1)
-                   outputActivity=1;
-
                outputs[i]->potential+=wout[j][i]/(float)10*(float)55*multiplier; 
+
+               
            } 
        }
+        if(outputs[0]->potential>threshold) {
+              outputActivity=1;
+        }
+
    }
 
    //dopamine and second phase
    if(outputActivity==1) {
+
+              printf("reached\n");
        if(reward)
-            dopamine=1.8f;
+            dopamine=dpeak;
 
        if(counter>300)  {
            phase=1;
