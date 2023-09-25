@@ -122,6 +122,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    }
 
    int outputActivity=0; 
+   int wrong=0;
 
    //increment output neurons
    for(int i=0;i<outNum;i++) {
@@ -136,6 +137,8 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
        }
         if(outputs[0]->potential>threshold) {
               outputActivity=1;
+        } else if(outputs[1]->potential>threshold) {
+            wrong=1;
         }
 
    }
@@ -144,18 +147,28 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    if(outputActivity==1) {
 
               printf("reached\n");
-       if(reward)
+       if(reward && counter<50)
             dopamine=dpeak;
 
-       if(counter>300)  {
+       if(counter>10)  {
            phase=1;
            timer=100000;
        }
 
-//       printf("COUNTER %d\n", counter);
+       printf("COUNTER %d\n", counter);
        counter++;
+   } else if(wrong==1) {
+       printf("wrong\n");
+       if(reward && counter<50)
+           if(dopamine>1.f)
+               dopamine=1.f;
+           else
+               dopamine=1/dpeak;
    } else if(dopamine>1.f) {
         dopamine-=0.05f;
+        printf("D: %f\n", dopamine);
+   } else if(dopamine<1.f) {
+        dopamine+=0.05f;
         printf("D: %f\n", dopamine);
    }
 
@@ -170,7 +183,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    }
 
    if(phase==0) {
-       if(inp==1) {
+       if(inp==3) {
            inputs[1]->potential=21;
 
            for(int i=0;i<trainNum;i++) {
@@ -187,11 +200,13 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
            }
            inp=0;
            anyActivity=1;
+           counter++;
        } else {
-           inp=1;
+           anyActivity=1;
+           inp++;
        }
    } else {
-       if(inp==3) {
+       if(inp==250) {
            inputs[1]->potential=21;
             inp=0;
             anyActivity=1;

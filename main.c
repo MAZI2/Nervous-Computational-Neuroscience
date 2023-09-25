@@ -34,7 +34,7 @@ void *thread(void *vargp) {
 
 int main() {
 
-    srand(11);
+    srand(8);
     GLFWwindow* window;
 
     /* Initialize the library */

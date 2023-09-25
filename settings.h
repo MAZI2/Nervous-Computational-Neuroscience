@@ -17,9 +17,9 @@ int recNum=100;
 int recX=10;
 int recY=10;
 
-float threshold=15.f;
+float threshold=18.f;
 float dopamine=1.f;
-float dpeak=2.5f;
+float dpeak=1.8f;
 
 float win[2][100];
 float wrec[100][100];

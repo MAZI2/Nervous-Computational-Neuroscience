@@ -95,6 +95,7 @@ void createConnections() {
     }
     //for now feedforward
     for(int i=0;i<recNum;i++) {
+        /*
         if((i-recX+1)%recX!=0) {
             if(i-recX>=0) {
                 wrec[i][i-recX+1]=1.5f;
@@ -116,7 +117,16 @@ void createConnections() {
                 //printf("\n");
 
         } 
+        */
+        for(int j=0;j<recNum;j++) {
+            if(j!=i) {
+                int a=randInt(0, 10);
+                if(a==10) {
+                    wrec[i][j]=1.5f;
+                }
+            }
 
+        }
     }
     
    //training
