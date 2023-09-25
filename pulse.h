@@ -39,13 +39,14 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    //reccurent nerves iteration
    for(int i=0;i<recNum;i++) {
        float potential=nerves[i]->potential;
+       float desensitize=nerves[i]->desensitize;
        int receptorType=nerves[i]->receptorType;
        //iterate through connections and check if there is a path and sufficient potential to fire
 
        //was current neuron incremented
        int add=0;
        for(int j=0;j<recNum;j++) {
-            
+           //inhibitory/excicatory 
            float multiplier=nerves[j]->multiplier;
            //skip connection if it was incremented in this iteration
            int inThis=0;            
@@ -60,9 +61,9 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
                add=1;
 
                if(receptorType==1) 
-                    potential+=(wrec[j][i]/(float)10*(float)55)*multiplier*dopamine; 
+                    potential+=(wrec[j][i]/(float)10*(float)55)*multiplier*dopamine*desensitize; 
                else
-                    potential+=((wrec[j][i]/(float)10*(float)55)*multiplier)/dopamine;
+                    potential+=((wrec[j][i]/(float)10*(float)55)*multiplier)/dopamine*desensitize;
                if(potential<0) potential=0;
 
                //printf("R %d -> %d (%f) %f\n", j, i, wrec[j][i]/(float)10*(float)55, potential);
@@ -86,9 +87,9 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
                add=1;
 
                if(receptorType==1) 
-                    potential+=(win[j][i]/(float)10*(float)55)*multiplier*dopamine;
+                    potential+=(win[j][i]/(float)10*(float)55)*multiplier*dopamine*desensitize;
                else
-                    potential+=((win[j][i]/(float)10*(float)55)*multiplier)/dopamine;
+                    potential+=((win[j][i]/(float)10*(float)55)*multiplier)/dopamine*desensitize;
 
                if(potential<0) potential=0;
 
@@ -126,11 +127,12 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    //increment output neurons
    for(int i=0;i<outNum;i++) {
+       float desensitize=outputs[i]->desensitize;
        for(int j=0;j<recNum;j++) {
            float multiplier=nerves[j]->multiplier;
 
            if(wout[j][i]>0 && nerves[j]->potential>threshold) {
-               outputs[i]->potential+=wout[j][i]/(float)10*(float)55*multiplier; 
+               outputs[i]->potential+=wout[j][i]/(float)10*(float)55*multiplier*desensitize; 
 
                
            } 
@@ -159,6 +161,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
        counter++;
    } else if(wrong==1) {
        printf("wrong\n");
+       //not sure about this
        if(reward && counter<50)
            if(dopamine>1.f)
                dopamine=1.f;

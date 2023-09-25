@@ -5,6 +5,7 @@ typedef struct _Nerve {
     float multiplier;
     int receptorType;
     int neuronType;
+    float desensitize;
 } Nerve;
 
 static Nerve** inputs;

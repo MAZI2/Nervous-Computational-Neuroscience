@@ -1,7 +1,25 @@
 int prev[100];
 int fired=0;
+//new fires
 int tempPrev[100];
 int tempFired=0;
+
+void resensitize() {
+    for(int i=0;i<tempFired;i++) {
+        int a=tempPrev[i];
+        nerves[a]->desensitize-=0.3f;
+    }
+    for(int i=0;i<recNum;i++) {
+        int d=nerves[i]->desensitize;
+        if(d<1.f)
+            nerves[i]->desensitize+=0.1f;
+    }
+    for(int i=0;i<outNum;i++) {
+        int d=outputs[i]->desensitize;
+        if(d<1.f)
+            outputs[i]->desensitize+=0.1f;
+    }
+}
 
 void adjustConnections() {
     FILE* saved=fopen("saved.txt", "w");
@@ -36,6 +54,7 @@ void adjustConnections() {
    //                 printf("Decrease %d -> %d - 0.05\n", a, j);
             }
         }
+
     }
 
     for(int i=0;i<tempFired;i++) {
@@ -50,4 +69,5 @@ void adjustConnections() {
     }
     
     fclose(saved);
+    resensitize();
 }

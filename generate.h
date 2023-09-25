@@ -148,6 +148,7 @@ void createNerves() {
 
             new->neuronType=1;
             new->multiplier=1.f;
+            new->desensitize=1.f;
 
             int type=randInt(0, 2);
             if(type==0) {
@@ -176,6 +177,7 @@ void createNerves() {
         new->neuronType=1;
         new->receptorType=1;
         new->multiplier=1.f;
+        new->desensitize=1.f;
 
         inputs[i]=new;
    }
@@ -190,6 +192,7 @@ void createNerves() {
         new->neuronType=1;
         new->receptorType=1;
         new->multiplier=1.f; 
+        new->desensitize=1.f;
 
         outputs[i]=new;
    }
