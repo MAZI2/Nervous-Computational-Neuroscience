@@ -18,9 +18,10 @@ int recNum=100;
 int recX=10;
 int recY=10;
 
-float threshold=18.f;
+float threshold=17.f;
 float dopamine=1.f;
-float dpeak=1.8f;
+float dpeak=1.7f;
+float fatigue=0.3f;
 
 float win[2][100];
 float wrec[100][100];
@@ -31,3 +32,5 @@ int reward=1;
 
 int trainNum=0;
 int trainingNerves[1];
+
+int seed=2;

@@ -82,9 +82,14 @@ void line(Nerve* start, Nerve* end, float width) {
     float yb=-end->y/20;
     
     if(start->potential>threshold) {
-        glColor4f(1.f, 0.f, 0.f, 1.f*width);
-    } else
-        glColor4f(1.f, 1.f, 1.f, 0.5f*width);
+        glColor4f(1.f, 0.f, 0.f, 0.5f*width);
+    } else {
+        if(start->receptorType==-1)
+            glColor4f(1.f, 1.f/dopamine, 1.f, 0.5f*width);
+        else
+            glColor4f(1.f/dopamine, 1.f, 1.f, 0.5f*width);
+
+    }
 
     glLineWidth(1);
 
@@ -133,14 +138,22 @@ void drawNerves() {
 
     drawConnections();
     for(int i=0;i<recNum;i++) {
-        glColor4f(1.f, 1.f, 1.f, 0.5f);
-        if(nerves[i]->receptorType==-1)
-            glColor4f(1.f, 0.f, 1.f, 0.5f);
 
+        //default color
+        glColor4f(1.f, 1.f/dopamine, 1.f, 0.5f);
+        //negative d response color
+        if(nerves[i]->receptorType==-1)
+            glColor4f(1.f, 1.f/dopamine, 1.f, 0.5f);
+        else
+            glColor4f(1.f/dopamine, 1.f, 1.f, 0.5f);
+
+
+        //red color for fired
         if(nerves[i]->potential>threshold) {
-            glColor4f(1.f, 0.f, 0.f, 1.f);
+            glColor4f(1.f, 0.f, 0.f, 0.5f);
         }
 
+        //circle or outline (neuron type)
         if(nerves[i]->neuronType==-1) {
             buildCircleOutline(0.2f, 20, nerves[i]);
             glColor4f(0.f, 0.f, 0.f, 1.f);

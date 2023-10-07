@@ -32,9 +32,40 @@ void *thread(void *vargp) {
     return NULL;
 }
 
+void printStatus() {
+    printf("Status\n");
+    printf("\n");
+    printf("seed: %d\n", seed);
+    printf("avgActivitiy: %f\n", avgAct);
+    printf("Output 1 activity: %f\n", output1count);
+    printf("Output 2 activity: %f", output2count);
+    printf("Output 1 potential: %f", outputs[0]->potential);
+    printf("Output 2 potential: %f", outputs[1]->potential);
+
+
+    printf("\n");
+    printf("Dopamine: %f\n", dopamine);
+    printf("\n");
+    printf("Params\n");
+    printf("threshold: %f\n", threshold);
+    printf("dpeak: %f\n", dpeak);
+    printf("reward: %d\n", reward);
+    printf("fatigue: %f\n", fatigue);
+    printf("\n");
+    printf("restore: %d\n", restore);
+    printf("trainNum: %d\n", trainNum);
+
+    for(int i=0;i<16;i++)
+        printf("\r\033[F");
+
+    fflush(stdout);
+}
+
+
 int main() {
 
-    srand(8);
+    srand(seed);
+
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -127,6 +158,8 @@ int main() {
      
 
         drawNerves();
+
+        printStatus();
 
         //glfwSetKeyCallback(window, keyPressed);
 

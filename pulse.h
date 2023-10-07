@@ -5,10 +5,14 @@ int phase=0;
 int counter=0;
 int timer=100000;
 
+float output1count=0;
+float output2count=0;
+
 int avg[10]={0,0,0,0,0,0,0,0,0,0};
 int avgCount=0;
+float avgAct=0;
 
-float activityAvg(int newFired) {
+void activityAvg(int newFired) {
     if(avgCount<10) {
         avg[avgCount]=newFired;
         avgCount++;
@@ -22,7 +26,16 @@ float activityAvg(int newFired) {
     for(int i=0;i<10;i++)
         sum+=avg[i];
 
-    return sum/10.f;
+    if(output1count-0.1f>0)
+        output1count-=0.1f;
+    else
+        output1count=0;
+    if(output2count-0.1f>0)
+        output2count-=0.1f;
+    else
+        output2count=0;
+
+    avgAct=sum/10.f;
 }
 
 void sendPulse() { //Nerve** activeNerves, int* activeNum) {
@@ -134,11 +147,13 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
            if(wout[j][i]>0 && nerves[j]->potential>threshold) {
                outputs[i]->potential+=wout[j][i]/(float)10*(float)55*multiplier*desensitize; 
 
+           if(outputs[i]->potential<0) outputs[i]->potential=0;
+
                
            } 
        }
         if(outputs[0]->potential>threshold) {
-              outputActivity=1;
+            outputActivity=1;
         } else if(outputs[1]->potential>threshold) {
             wrong=1;
         }
@@ -147,32 +162,47 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
    //dopamine and second phase
    if(outputActivity==1) {
+       output1count+=5.f;
 
-              printf("reached\n");
-       if(reward && counter<50)
+       //    printf("reached\n");
+       /*
+       if(reward)
             dopamine=dpeak;
 
-       if(counter>10)  {
+       if(counter>60)  {
            phase=1;
            timer=100000;
        }
 
-       printf("COUNTER %d\n", counter);
+       //printf("COUNTER %d\n", counter);
        counter++;
+       */
    } else if(wrong==1) {
-       printf("wrong\n");
+       output2count+=5.f;
+        if(reward)
+            dopamine=dpeak;
+
+       if(counter>60)  {
+           phase=1;
+           timer=100000;
+       }
+
+       //printf("COUNTER %d\n", counter);
+       counter++;
+
+       //printf("wrong\n");
        //not sure about this
-       if(reward && counter<50)
-           if(dopamine>1.f)
-               dopamine=1.f;
-           else
-               dopamine=1/dpeak;
+       /* if(reward && counter<50) */
+       /*     if(dopamine>1.f) */
+       /*         dopamine=1.f; */
+       /*     else */
+       /*         dopamine=1/dpeak; */
    } else if(dopamine>1.f) {
         dopamine-=0.05f;
-        printf("D: %f\n", dopamine);
+        //printf("D: %f\n", dopamine);
    } else if(dopamine<1.f) {
         dopamine+=0.05f;
-        printf("D: %f\n", dopamine);
+        //printf("D: %f\n", dopamine);
    }
 
    //set inputs to 0 after firing
@@ -189,6 +219,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
        if(inp==3) {
            inputs[1]->potential=21;
 
+           /*
            for(int i=0;i<trainNum;i++) {
                 //purpose of thread args ... ??
                 int a=trainingNerves[i];
@@ -201,6 +232,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
                 tempFired++; 
                 count++;
            }
+           */
            inp=0;
            anyActivity=1;
            counter++;
@@ -246,7 +278,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 //   printf("----\n");
 
    if(anyActivity) {
-       float act=activityAvg(tempFired);
+       activityAvg(tempFired);
        //printf("%f\n", act);
        adjustConnections();
         sendPulse();

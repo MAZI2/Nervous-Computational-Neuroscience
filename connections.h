@@ -7,7 +7,7 @@ int tempFired=0;
 void resensitize() {
     for(int i=0;i<tempFired;i++) {
         int a=tempPrev[i];
-        nerves[a]->desensitize-=0.3f;
+        nerves[a]->desensitize-=fatigue;
     }
     for(int i=0;i<recNum;i++) {
         int d=nerves[i]->desensitize;
