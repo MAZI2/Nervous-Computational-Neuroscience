@@ -65,7 +65,16 @@ void createConnections() {
     */
 
     //all connected
+    //inputs
     for(int i=0;i<inNum;i++) {
+        for(int j=0;j<recNum;j++) {
+            if((j%10)<3) {
+                int rnd=randInt(0, 2);
+                if(rnd==0)
+                    win[i][j]=1.5f;
+            }
+        }
+        /*
         win[0][0]=1.5f;
         win[0][10]=1.5f;
         win[0][20]=1.5f;
@@ -77,10 +86,20 @@ void createConnections() {
         win[1][70]=1.5f;
         win[1][80]=1.5f;
         win[1][90]=1.5f;
-
+        */
 
     }
-    for(int i=4;i<recNum;i+=5) {
+    //outputs
+    for(int i=0;i<outNum;i++) {
+        for(int j=0;j<recNum;j++) {
+            if((j%10)>6) {
+                int rnd=randInt(0, 2);
+                if(rnd==0)
+                    wout[j][i]=1.5f;
+            }
+        }
+
+        /*
         wout[9][0]=1.5f;
         wout[19][0]=1.5f;
         wout[29][0]=1.5f;
@@ -92,6 +111,7 @@ void createConnections() {
         wout[79][1]=1.5f;
         wout[89][1]=1.5f;
         wout[99][1]=1.5f;
+        */
     }
     //for now feedforward
     for(int i=0;i<recNum;i++) {

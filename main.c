@@ -38,8 +38,8 @@ void printStatus() {
     printf("seed: %d\n", seed);
     printf("avgActivitiy: %f\n", avgAct);
     printf("Output 1 activity: %f\n", output1count);
-    printf("Output 2 activity: %f", output2count);
-    printf("Output 1 potential: %f", outputs[0]->potential);
+    printf("Output 2 activity: %f\n", output2count);
+    printf("Output 1 potential: %f\n", outputs[0]->potential);
     printf("Output 2 potential: %f", outputs[1]->potential);
 
 
@@ -55,7 +55,22 @@ void printStatus() {
     printf("restore: %d\n", restore);
     printf("trainNum: %d\n", trainNum);
 
-    for(int i=0;i<16;i++)
+    int sum1=0;
+    int sum2=0;
+    for(int i=0;i<10;i++) {
+        if(avgOut1[i]) sum1++;
+        printf("%d ", avgOut1[i]);
+    }
+    printf("%d\n", sum1);
+
+
+    for(int i=0;i<10;i++) {
+        if(avgOut2[i]) sum2++;
+        printf("%d ", avgOut2[i]);
+    }
+    printf("%d\n", sum2);
+
+    for(int i=0;i<20;i++)
         printf("\r\033[F");
 
     fflush(stdout);
@@ -73,7 +88,7 @@ int main() {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1500, 700, "Nervous", NULL, NULL);
+    window = glfwCreateWindow(1200, 700, "Nervous", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;

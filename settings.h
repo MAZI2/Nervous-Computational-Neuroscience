@@ -33,4 +33,4 @@ int reward=1;
 int trainNum=0;
 int trainingNerves[1];
 
-int seed=2;
+int seed=1;
