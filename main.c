@@ -1,16 +1,18 @@
 #include <unistd.h>
 #include <pthread.h>
+#include <stdio.h>
 
 //network specifications
 #include "settings.h"
 
+#include "PathAlgorithm.h"
 //draw
 #include "nerve.h"
 //create
 #include "generate.h"
 
+#include "statistics.h"
 #include "pulse.h"
-
 
 typedef struct _threadArgs{
     int len;
@@ -36,7 +38,10 @@ void printStatus() {
     printf("Status\n");
     printf("\n");
     printf("seed: %d\n", seed);
+    printf("tick: %d\n", tickCount);
+
     printf("avgActivitiy: %f\n", avgAct);
+
     printf("Output 1 activity: %f\n", output1count);
     printf("Output 2 activity: %f\n", output2count);
     printf("Output 1 potential: %f\n", outputs[0]->potential);
@@ -45,6 +50,11 @@ void printStatus() {
 
     printf("\n");
     printf("Dopamine: %f\n", dopamine);
+    printf("Decay: %f\n", decay);
+
+    printf("I1:%d  O1%d\n", inputsFired[0], outputsFired[0]);
+    printf("I2:%d  O2%d\n", inputsFired[1], outputsFired[1]);
+
     printf("\n");
     printf("Params\n");
     printf("threshold: %f\n", threshold);
@@ -54,6 +64,10 @@ void printStatus() {
     printf("\n");
     printf("restore: %d\n", restore);
     printf("trainNum: %d\n", trainNum);
+
+    for(int i=ix-1;i>=0;i--)
+        printf("%d->", path[i]);
+    printf("\n");
 
     int sum1=0;
     int sum2=0;
@@ -70,7 +84,7 @@ void printStatus() {
     }
     printf("%d\n", sum2);
 
-    for(int i=0;i<20;i++)
+    for(int i=0;i<25;i++)
         printf("\r\033[F");
 
     fflush(stdout);
@@ -88,20 +102,25 @@ int main() {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1200, 700, "Nervous", NULL, NULL);
-    if (!window) {
-        glfwTerminate();
-        return -1;
-    }
+    if(visualize) {
+        window = glfwCreateWindow(1200, 700, "Nervous", NULL, NULL);
+        if (!window) {
+            glfwTerminate();
+            return -1;
+        }
 
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
+        /* Make the window's context current */
+        glfwMakeContextCurrent(window);
+    }
 
     int width, height;
     double cx, cy;
 
 
     createNerves();
+    //printf("%f\n", wout[7][0]);
+
+    //????
     for(int i=0;i<trainNum;i++) {
         trainingNerves[i]=6;//randInt(50, 99);
     }
@@ -124,8 +143,38 @@ int main() {
     int b=1;
     int c=1;
 
-    pthread_t thread_id1;
-    pthread_create(&thread_id1, NULL, thread, (void *)a);
+    
+    double avgxs[10];
+    double avgs1[10];
+    double avgs2[10];
+
+    if(statistic) {
+        for(int i=0;i<statisticInterval;i++) {
+            srand(seed);
+            createNerves();
+
+            pthread_t thread_id1;
+            pthread_create(&thread_id1, NULL, thread, (void *)a);
+
+            pthread_join(thread_id1, NULL);
+            seed++;
+            tickCount=0;
+            printf("%d 1: %f, 2: %f\n", seed, iterationAvg1, iterationAvg2);
+            avgs1[i]=iterationAvg1;
+            avgs2[i]=iterationAvg2;
+            avgxs[i]=i;
+            iterationAvg1=0;
+            iterationAvg2=0;
+        } 
+
+        plot(avgxs, avgs1, avgs2, 10, "final");
+
+
+    } else {
+        pthread_t thread_id1;
+        pthread_create(&thread_id1, NULL, thread, (void *)a);
+    }
+
 
     /*
     pthread_t thread_id2;
@@ -138,7 +187,7 @@ int main() {
     */
 
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window) && tickCount<=plotSize && visualize) {
         glfwGetWindowSize(window, &width, &height);
         height = height > 0 ? height : 1; // Special case: avoid division by zero below
         glViewport(0, 0, width, height);
@@ -174,7 +223,8 @@ int main() {
 
         drawNerves();
 
-        printStatus();
+        if(enableStatus)
+            printStatus();
 
         //glfwSetKeyCallback(window, keyPressed);
 
@@ -183,7 +233,10 @@ int main() {
     }
 
     
-    pthread_join(thread_id1, NULL);
+    /*
+    if(!statistic)
+        pthread_join(thread_id1, NULL);
+        */
 
     /*
     pthread_join(thread_id2, NULL);

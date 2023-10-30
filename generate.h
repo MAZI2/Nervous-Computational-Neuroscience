@@ -68,7 +68,7 @@ void createConnections() {
     //inputs
     for(int i=0;i<inNum;i++) {
         for(int j=0;j<recNum;j++) {
-            if((j%10)<3) {
+            if((j%10)<5) {
                 int rnd=randInt(0, 2);
                 if(rnd==0)
                     win[i][j]=1.5f;
@@ -92,9 +92,10 @@ void createConnections() {
     //outputs
     for(int i=0;i<outNum;i++) {
         for(int j=0;j<recNum;j++) {
-            if((j%10)>6) {
-                int rnd=randInt(0, 2);
+            if((j%10)>5) {
+                int rnd=randInt(0, 1);
                 if(rnd==0)
+                    //printf("this\n");
                     wout[j][i]=1.5f;
             }
         }
@@ -113,8 +114,9 @@ void createConnections() {
         wout[99][1]=1.5f;
         */
     }
-    //for now feedforward
+
     for(int i=0;i<recNum;i++) {
+        //feedforward
         /*
         if((i-recX+1)%recX!=0) {
             if(i-recX>=0) {
@@ -138,6 +140,7 @@ void createConnections() {
 
         } 
         */
+        //recurrent
         for(int j=0;j<recNum;j++) {
             if(j!=i) {
                 int a=randInt(0, 10);
@@ -153,6 +156,16 @@ void createConnections() {
    /* wrec[28][37]=6.5f; */
    /* wrec[28][29]=6.5f; */
    /* wrec[38][31]=6.5f; */
+
+   findPath(outputs[0], 1, 0);
+   adjustOutgoing(0);
+
+   /*
+   ix=0;
+
+   findPath(outputs[1], 1, 1);
+   adjustOutgoing(1);
+   */
 }
 
 void createNerves() {

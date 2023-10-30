@@ -1,7 +1,6 @@
 #define GLFW_INCLUDE_GLU 
 #include <GLFW/glfw3.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -75,12 +74,12 @@ void buildCircleOutline(float radius, int vCount, Nerve* nerve) {
     glEnd();
 }
 
-void line(Nerve* start, Nerve* end, float width) {
+void line(Nerve* start, Nerve* end, float width, int output) {
     float xa=start->x/20;
     float ya=-(start->y/20);
     float xb=end->x/20;
     float yb=-end->y/20;
-    
+
     if(start->potential>threshold) {
         glColor4f(1.f, 0.f, 0.f, 0.5f*width);
     } else {
@@ -90,6 +89,18 @@ void line(Nerve* start, Nerve* end, float width) {
             glColor4f(1.f/dopamine, 1.f, 1.f, 0.5f*width);
 
     }
+    int both=0;
+    for(int j=0;j<ix;j++) {
+        if(path[j]==start->id)
+            both++;
+        if(path[j]==end->id)
+            both++;
+
+        if(both==2) {
+            glColor4f(1.f, 1.f, 0.f, 0.5f*width);
+        }
+    }
+
 
     glLineWidth(1);
 
@@ -112,7 +123,7 @@ void drawConnections() {
     for(int i=0;i<recNum;i++) {
        for(int j=0;j<recNum;j++) {
             if(wrec[i][j]>0) {
-                line(nerves[i], nerves[j], wrec[i][j]);
+                line(nerves[i], nerves[j], wrec[i][j], 0);
             }
        }
     }
@@ -120,15 +131,17 @@ void drawConnections() {
     for(int i=0;i<inNum;i++) {
         for(int j=0;j<recNum;j++) {
             if(win[i][j]>0) {
-                line(inputs[i], nerves[j], win[i][j]);
+                line(inputs[i], nerves[j], win[i][j], 0);
             }
         }
     }
     //outputs
-    for(int i=0;i<recNum;i++) {
-        for(int j=0;j<inNum;j++) {
-            if(wout[i][j]>0) {
-                line(nerves[i], outputs[j], wout[i][j]);
+    for(int i=0;i<outNum;i++) {
+        for(int j=0;j<recNum;j++) {
+            if(wout[j][i]>0) {
+     //           if(j==7 && i==1)
+                    //printf("%f\n", wout[7][1]);
+                line(nerves[j], outputs[i], wout[j][i], 1);
             }
         }
     }
@@ -159,8 +172,15 @@ void drawNerves() {
             glColor4f(0.f, 0.f, 0.f, 1.f);
             buildCircle(0.15f, 20, nerves[i]);
 
-        } else
+        } else {
+            for(int j=0;j<ix;j++) {
+                if(path[j]==i) {
+                    glColor4f(1.f, 1.f, 0.f, 1.f);
+                    break;
+                }   
+            }
             buildCircle(0.2f, 20, nerves[i]);
+        }
     }
     for(int i=0;i<inNum;i++) {
        glColor4f(0.f, 1.f, 1.f, 0.5f);

@@ -18,8 +18,8 @@ endif()
 set( GLFW-CMAKE-STARTER-SRC
      main.c
      )
-     
-add_executable( nervous WIN32 ${GLFW-CMAKE-STARTER-SRC} )
+
+add_executable( nervous WIN32 ${GLFW-CMAKE-STARTER-SRC} pbPlots.c supportLib.c)
 target_link_libraries( nervous ${OPENGL_LIBRARIES} glfw )
 target_link_libraries( nervous ${OPENGL_LIBRARIES} glut )
 

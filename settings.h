@@ -20,8 +20,11 @@ int recY=10;
 
 float threshold=17.f;
 float dopamine=1.f;
+float decay=0.3f; //0.05
 float dpeak=1.7f;
-float fatigue=0.3f;
+float fatigue=0.5f;
+float pathAdjust=0.1f;//0.1f;
+int inputInterval=10;//3
 
 float win[2][100];
 float wrec[100][100];
@@ -33,4 +36,16 @@ int reward=1;
 int trainNum=0;
 int trainingNerves[1];
 
-int seed=1;
+int seed=4;//4
+int timer=0;//150000;
+int inputEnable=1;
+int enableStatus=0;
+int trainedNerve=0;
+
+
+int plotSize=1300;
+int visualize=1;
+int statistic=0;
+int statisticInterval=10;
+
+
