@@ -2,9 +2,11 @@
 #include "supportLib.h"
 
 int tickCount=0;
+//last 300ticks are averaged for output 1 and 2
 float iterationAvg1=0;
 float iterationAvg2=0;
 
+//average output of 1 and 2 over 10 iterations
 int avgOut1[10]={0,0,0,0,0,0,0,0,0,0};
 int avgOutCount1=0;
 float output1count=0;
@@ -13,10 +15,12 @@ int avgOut2[10]={0,0,0,0,0,0,0,0,0,0};
 int avgOutCount2=0;
 float output2count=0;
 
+//overall network average over 10 iterations
 int avg[10]={0,0,0,0,0,0,0,0,0,0};
 int avgCount=0;
 float avgAct=0;
 
+//arrays for plotting neuron activity
 double xss[2000];
 double yss1[2000];
 double yss2[2000];
@@ -86,9 +90,9 @@ void plot(double xs[], double ys1[], double ys2[], int len, char* name) {
 	}
 
 	FreeAllocations();
-
 }
 
+//average network activity
 void activityAvg(int newFired) {
     if(avgCount<10) {
         avg[avgCount]=newFired;
@@ -105,7 +109,7 @@ void activityAvg(int newFired) {
 
     avgAct=sum/10.f;
 
-
+    //plot output activity
     if(tickCount>=plotSize) {
         plot(xss, yss1, yss2, plotSize, "inter.png");
     } else{

@@ -1,12 +1,14 @@
 #define GLFW_INCLUDE_GLU 
 #include <GLFW/glfw3.h>
 
-#include <stdlib.h>
 #include <math.h>
 
 typedef struct _Point {
     float x, y, z;
 } Point;
+
+
+//functions for drawing neurons and connections
 
 void buildCircle(float radius, int vCount, Nerve* nerve) {
     float cx=nerve->x;
@@ -89,6 +91,7 @@ void line(Nerve* start, Nerve* end, float width, int output) {
             glColor4f(1.f/dopamine, 1.f, 1.f, 0.5f*width);
 
     }
+    //draw artificially strengthened path yellow
     /*
     int both=0;
     for(int j=0;j<ix;j++) {
@@ -102,7 +105,6 @@ void line(Nerve* start, Nerve* end, float width, int output) {
         }
     }
     */
-
 
     glLineWidth(1);
 
@@ -141,8 +143,6 @@ void drawConnections() {
     for(int i=0;i<outNum;i++) {
         for(int j=0;j<recNum;j++) {
             if(wout[j][i]>0) {
-     //           if(j==7 && i==1)
-                    //printf("%f\n", wout[7][1]);
                 line(nerves[j], outputs[i], wout[j][i], 1);
             }
         }
@@ -156,7 +156,7 @@ void drawNerves() {
 
         //default color
         glColor4f(1.f, 1.f/dopamine, 1.f, 0.5f);
-        //negative d response color
+        //negative dopamine response color
         if(nerves[i]->receptorType==-1)
             glColor4f(1.f, 1.f/dopamine, 1.f, 0.5f);
         else
@@ -200,5 +200,4 @@ void drawNerves() {
 
        buildCircle(0.2f, 20, outputs[i]);
     }
-
 }

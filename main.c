@@ -9,7 +9,7 @@
 #include "PathAlgorithm.h"
 //draw
 #include "nerve.h"
-//create
+//generate neurons and connections
 #include "generate.h"
 
 #include "statistics.h"
@@ -20,6 +20,7 @@ typedef struct _threadArgs{
     int* inputs;
 } threadArgs;
 
+//currently everything on one thread
 void *thread(void *vargp) {
         int t;
 
@@ -35,6 +36,7 @@ void *thread(void *vargp) {
     return NULL;
 }
 
+//terminal status print
 void printStatus() {
     printf("Status\n");
     printf("\n");
@@ -64,12 +66,11 @@ void printStatus() {
     printf("fatigue: %f\n", fatigue);
     printf("\n");
     printf("restore: %d\n", restore);
-    printf("trainNum: %d\n", trainNum);
+    //printf("trainNum: %d\n", trainNum);
 
-    for(int i=ix-1;i>=0;i--)
-        printf("%d->", path[i]);
     printf("\n");
 
+    //display of output fires over 10ticks and the sum
     int sum1=0;
     int sum2=0;
     for(int i=0;i<10;i++) {
@@ -85,7 +86,9 @@ void printStatus() {
     }
     printf("%d\n", sum2);
 
-    for(int i=0;i<25;i++)
+
+    //move cursor up 24 lines
+    for(int i=0;i<24;i++)
         printf("\r\033[F");
 
     fflush(stdout);
@@ -96,6 +99,7 @@ int main() {
 
     srand(seed);
 
+    //GLFW setup ------------------------
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -116,16 +120,12 @@ int main() {
 
     int width, height;
     double cx, cy;
+    //------------------------------------
 
 
     createNerves();
-    //printf("%f\n", wout[7][0]);
 
-    //????
-    for(int i=0;i<trainNum;i++) {
-        trainingNerves[i]=6;//randInt(50, 99);
-    }
-
+    //restore connections from file
     if(restore) {
         FILE* saved=fopen("saved.txt", "r");
         for(int i=0;i<recNum;i++) {
@@ -136,6 +136,7 @@ int main() {
         fclose(saved);
     }
 
+    //arguments for input fired at start (deprecated ... handled from settings and inside pulse function)
     threadArgs* a=malloc(sizeof(threadArgs));
     int aa[1]={1};
     a->inputs=aa;
@@ -144,12 +145,13 @@ int main() {
     int b=1;
     int c=1;
 
-    
+    //arrays for plotting output1 (avgs1) and output2 (avgs2) if in statistics mode 
     double avgxs[50];
     double avgs1[50];
     double avgs2[50];
 
     if(statistic) {
+        //increment seed and recreate neurons and connections
         for(int i=0;i<statisticInterval;i++) {
             srand(seed);
             createNerves();
@@ -160,7 +162,9 @@ int main() {
             pthread_join(thread_id1, NULL);
             seed++;
             tickCount=0;
+
             printf("%d 1: %f, 2: %f\n", seed, iterationAvg1, iterationAvg2);
+
             avgs1[i]=iterationAvg1;
             avgs2[i]=iterationAvg2;
             avgxs[i]=i;
@@ -168,15 +172,16 @@ int main() {
             iterationAvg2=0;
         } 
 
+        //plot collected averages of last 300 ticks of each seed simulated
         plot(avgxs, avgs1, avgs2, 50, "final");
 
-
     } else {
+        //if not in statistic mode, only selected seed will be simulated
         pthread_t thread_id1;
         pthread_create(&thread_id1, NULL, thread, (void *)a);
     }
 
-
+    //other threads if needed?
     /*
     pthread_t thread_id2;
     pthread_create(&thread_id2, NULL, thread, (void *)&b);
@@ -184,10 +189,9 @@ int main() {
     usleep(300000);
     pthread_t thread_id3;
     pthread_create(&thread_id3, NULL, thread, (void *)&c);
-
     */
 
-
+    //GLFW rendering loop
     while (!glfwWindowShouldClose(window) && tickCount<=plotSize && visualize) {
         glfwGetWindowSize(window, &width, &height);
         height = height > 0 ? height : 1; // Special case: avoid division by zero below
@@ -220,7 +224,6 @@ int main() {
         */
 
         //-------------------------------------------------------------------------
-     
 
         drawNerves();
 
@@ -233,11 +236,10 @@ int main() {
         glfwPollEvents();
     }
 
-    
     /*
     if(!statistic)
         pthread_join(thread_id1, NULL);
-        */
+    */
 
     /*
     pthread_join(thread_id2, NULL);

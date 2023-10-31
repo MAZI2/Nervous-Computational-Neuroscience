@@ -1,10 +1,13 @@
 #include "connections.h"
 
+//to wait inputInterval between input fires 
 int inp=0;
-int phase=0;
+//general purpose counter ... currently counts input fires
 int counter=0;
 
-void sendPulse() { //Nerve** activeNerves, int* activeNum) {
+
+//extremely long pulse function
+void sendPulse() {
    tempFired=0;
 
    usleep(timer);
@@ -114,7 +117,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    }
 
    int outputActivity=0; 
-   int wrong=0;
+   int outputActivity1=0;
 
    int outSkips[2]={0, 0};
 
@@ -136,19 +139,13 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
        
        if(outputs[0]->potential>threshold) {
-//           if(trainedNerve==0)
-               outputActivity=1;
-//           else
-//               wrong=1;
+           outputActivity=1;
            outputsFired[0]=1;
        } else
            outputsFired[0]=0;
 
        if(outputs[1]->potential>threshold) {
-//           if(trainedNerve==1)
-//               outputActivity=1;
-//           else
-               wrong=1;
+           outputActivity1=1;
            outputsFired[1]=1;
        } else
            outputsFired[1]=0;
@@ -188,41 +185,15 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    }
 
 
-   //dopamine and second phase
+   //dopamine
    if(outputActivity==1 && trainedNerve==0) {
        if(reward)
             dopamine=dpeak;
-       /*
-
-       if(counter>60)  {
-           phase=1;
-           timer=100000;
-       }
-       */
    }
-   if(wrong==1 && trainedNerve==1) {
+
+   if(outputActivity1==1 && trainedNerve==1) {
        if(reward)
             dopamine=dpeak;
-
-       /*
-       if(reward)
-            dopamine=dpeak;
-
-       if(counter>60)  {
-           phase=1;
-           timer=100000;
-       }
-
-       counter++;
-       */
-
-       //printf("wrong\n");
-       //not sure about this
-       /* if(reward && counter<50) */
-       /*     if(dopamine>1.f) */
-       /*         dopamine=1.f; */
-       /*     else */
-       /*         dopamine=1/dpeak; */
    } else if(dopamine>1.f) {
         dopamine-=decay;
    } else if(dopamine<1.f) {
@@ -230,121 +201,86 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    }
 
    if(inputEnable) {
-       if(phase==0) {
-           if(inp==inputInterval) {
-               inputs[inputNerve]->potential=50;
-               inputsFired[inputNerve]=1;
+       if(inp==inputInterval) {
+           //SINGLE INPUT
+           inputs[inputNerve]->potential=50;
+           inputsFired[inputNerve]=1;
 
-               /*
-               for(int i=0;i<trainNum;i++) {
-                    //purpose of thread args ... ??
-                    int a=trainingNerves[i];
+           //FIRE CERTAIN NON-INPUT NERVES (for association)
+           /*
+           for(int i=0;i<trainNum;i++) {
+                //purpose of thread args ... ??
+                int a=trainingNerves[i];
 
-                    nerves[a]->potential=21; 
-                    temp[count]=nerves[a]; 
+                nerves[a]->potential=21; 
+                temp[count]=nerves[a]; 
 
-                    tempPrev[tempFired]=a; 
+                tempPrev[tempFired]=a; 
 
-                    tempFired++; 
-                    count++;
-               }
-               */
-               inp=0;
-               //anyActivity=1;
-               counter++;
-           } else {
-               //anyActivity=1;
-               inp++;
+                tempFired++; 
+                count++;
            }
-       } 
-       /*
-       else {
-           if(inp==250) {
-               inputs[1]->potential=21;
-                inp=0;
-                anyActivity=1;
-           } else {
-                inp++;
-                anyActivity=1;
-           }
+           */
+           inp=0;
+           counter++;
+       } else {
+           inp++;
        }
-       */
    }
 
 //  --------------------------------------- 
 
-   //statistics
-   if(outputActivity && wrong)
+   //a dumb way of recording activity of output 1 and 2
+   if(outputActivity && outputActivity1)
        outputAvg(1, 1);
    else if(outputActivity)
        outputAvg(1, 0);
-   else if(wrong)
+   else if(outputActivity1)
        outputAvg(0, 1);
    else
        outputAvg(0, 0);
 
 
-   //if(anyActivity) {
-       activityAvg(tempFired);
-       //printf("%f\n", act);
-       adjustConnections();
-       if(tickCount<=plotSize) {
-           if(tickCount>1000 && !statistic) {
-               iterationAvg1+=output1count;
-               iterationAvg2+=output2count;
-           }
-           if(counter>0) {
-                //inputNerve=inputNerves[149];
-                inputNerve=1;
-                //trainedNerve=inputNerves[149];
-                trainedNerve=0;
-           } else {
-                 inputNerve=inputNerves[counter];
-                 if(counter<40)
-                    trainedNerve=1;
-                 else
-                     trainedNerve=1;
-           }
-           //printf("%d\n", counter);
-           //printf("%f\n", wrec[38][17]);
+   //average overall activity
+   activityAvg(tempFired);
 
-           sendPulse();
-       } else {
-           iterationAvg1/=300;
-           iterationAvg2/=300;
-           printf("%f %f\n", iterationAvg1, iterationAvg2);
-           pthread_exit(NULL);
+   //increase and decrease connections
+   adjustConnections();
+
+   if(tickCount<=plotSize) {
+       //if 1300 ticks ... after 1000th start recording outputs
+       if(tickCount>1000 && statistic) {
+           iterationAvg1+=output1count;
+           iterationAvg2+=output2count;
        }
-   //} 
 
-   /*
-   else {
-        int reset=1;
-        for(int i=0;i<recNum;i++) {
-            if(nerves[i]->potential>0) {
-                reset=0;
-                break;
-            }
-        } 
-        //if all neurons 0 reset inputs
-        if(reset) {
-            for(int i=0;i<outNum;i++) {
-                if(outputs[i]->potential>0) {
-                    reset=0;
-                    break;
-                }
-            }
+       //FOR INPUT AS A SEQUENCE
+       /*
+       //if simulation goes beyond the input sequence, repeat last input
+       if(counter>149) {
+            //inputNerve=inputNerves[149];
+            inputNerve=1;
+            //trainedNerve=inputNerves[149];
+            trainedNerve=0;
+       } else {
+             inputNerve=inputNerves[counter];
+             if(counter<40)
+                 trainedNerve=1;
+             else
+                 trainedNerve=1;
+       }
+       */
 
-            //make array of inputs global!
-            if(reset) {
-                int inputArr[2]={1, 0};
-                for(int i=0;i<inNum;i++) {
-                   if(inputArr[i]) inputs[i]->potential=21; 
-                }    
-                sendPulse();
-            }
-        }
-        
+       //SINGLE REPEATED INPUT
+       inputNerve=1;
+       trainedNerve=1;
+
+       sendPulse();
+   } else {
+       //average outputs last 300ticks ... are plotted
+       iterationAvg1/=300;
+       iterationAvg2/=300;
+
+       pthread_exit(NULL);
    }
-   */
 }

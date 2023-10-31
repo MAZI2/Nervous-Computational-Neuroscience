@@ -1,6 +1,8 @@
+//array where found path is stored
 int path[100];
 int ix=0;
 
+//outgoing neurons from found path are weakened to prevent a lot of recurrent action (possibily a lot of wrong output)
 void adjustOutgoing(int goalOutput) {
     //rec to rec
     //start to end
@@ -28,6 +30,9 @@ void adjustOutgoing(int goalOutput) {
 int* temp;
 int tempix;
 
+//find a path from goal output neuron, to goalInput neuron
+//search excitatory paths
+//dumb function args ... goal is next neuron, isOuput marks if goal is output, goalInput is target input number
 void findPath(Nerve* goal, int isOutput, int goalInput) {
 
     if(isOutput) {

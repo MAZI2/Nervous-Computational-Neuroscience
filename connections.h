@@ -1,12 +1,14 @@
+//array of fired neurons from previous iteration
 int prev[100];
 int fired=0;
-//new fires
+//array of fired in the last iteration
 int tempPrev[100];
 int tempFired=0;
 
 int outputsFired[2];
 int inputsFired[2];
 
+//resensitizing fatigued neurons every iteration
 void resensitize() {
     for(int i=0;i<tempFired;i++) {
         int a=tempPrev[i];
@@ -28,13 +30,15 @@ void adjustConnections() {
     FILE* saved=fopen("saved.txt", "w");
     if(saved==NULL) printf("error\n");
 
+    //compare neurons to neurons that fired in last iteration
+    //strengthen connection if successful (neuron that fired caused other to fire in next iteration)
+    //decrease connection if unsuccessful
     for(int i=0;i<fired;i++) {
         for(int j=0;j<tempFired;j++) {
             int a=prev[i];
             int b=tempPrev[j];
             if(wrec[a][b]>0) {
                 wrec[a][b]+=pathAdjust;
-    //            printf("Strength %d -> %d + 0.05\n", a, b);
             } 
         }
         for(int j=0;j<outNum;j++) {
@@ -45,7 +49,8 @@ void adjustConnections() {
                 }
             }
         }
-        //inneficient decrease recurrent to recurrent
+        //decrease recurrent to recurrent
+        //very inefficient
         for(int j=0;j<recNum;j++) {
             int successful=0;
             for(int k=0;k<tempFired;k++) {
@@ -62,7 +67,6 @@ void adjustConnections() {
                     wrec[a][j]=0;
                 else
                     wrec[a][j]-=pathAdjust;
-   //                 printf("Decrease %d -> %d - 0.05\n", a, j);
             }
         }
 
@@ -78,6 +82,8 @@ void adjustConnections() {
         }
 
     }
+    //input neurons to recurrent are currently not adjusted
+    
     //adjust input connections
     /*
     for(int i=0;i<inNum;i++) {
@@ -108,11 +114,14 @@ void adjustConnections() {
     }
     */
 
+    //swap prev with current
     for(int i=0;i<tempFired;i++) {
         prev[i]=tempPrev[i];
     }
     fired=tempFired;
 
+    //save connections to file
+    //TODO: whould be togglable
     for(int i=0;i<recNum;i++) {
         for(int j=0;j<recNum;j++) {
            fprintf(saved, "%f ", wrec[i][j]); 
