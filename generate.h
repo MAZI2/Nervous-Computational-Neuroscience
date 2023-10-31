@@ -157,15 +157,19 @@ void createConnections() {
    /* wrec[28][29]=6.5f; */
    /* wrec[38][31]=6.5f; */
 
-   findPath(outputs[0], 1, 0);
-   adjustOutgoing(0);
+   if(pretrained) {
+       findPath(outputs[0], 1, 0);
+       adjustOutgoing(0);
 
-   /*
-   ix=0;
+       
+       for(int i=0;i<ix;i++) {
+            printf("%d ", path[i]);
+       }
+       printf("\n");
 
-   findPath(outputs[1], 1, 1);
-   adjustOutgoing(1);
-   */
+       findPath(outputs[1], 1, 1);
+       adjustOutgoing(1);
+   }
 }
 
 void createNerves() {

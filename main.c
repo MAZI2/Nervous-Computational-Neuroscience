@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 //network specifications
 #include "settings.h"
@@ -144,9 +145,9 @@ int main() {
     int c=1;
 
     
-    double avgxs[10];
-    double avgs1[10];
-    double avgs2[10];
+    double avgxs[50];
+    double avgs1[50];
+    double avgs2[50];
 
     if(statistic) {
         for(int i=0;i<statisticInterval;i++) {
@@ -167,7 +168,7 @@ int main() {
             iterationAvg2=0;
         } 
 
-        plot(avgxs, avgs1, avgs2, 10, "final");
+        plot(avgxs, avgs1, avgs2, 50, "final");
 
 
     } else {

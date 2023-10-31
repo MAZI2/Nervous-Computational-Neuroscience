@@ -136,18 +136,18 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
        
        if(outputs[0]->potential>threshold) {
-           if(trainedNerve==0)
+//           if(trainedNerve==0)
                outputActivity=1;
-           else
-               wrong=1;
+//           else
+//               wrong=1;
            outputsFired[0]=1;
        } else
            outputsFired[0]=0;
 
        if(outputs[1]->potential>threshold) {
-           if(trainedNerve==1)
-               outputActivity=1;
-           else
+//           if(trainedNerve==1)
+//               outputActivity=1;
+//           else
                wrong=1;
            outputsFired[1]=1;
        } else
@@ -189,7 +189,7 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
 
 
    //dopamine and second phase
-   if(outputActivity==1) {
+   if(outputActivity==1 && trainedNerve==0) {
        if(reward)
             dopamine=dpeak;
        /*
@@ -199,10 +199,11 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
            timer=100000;
        }
        */
-
-       counter++;
    }
-   if(wrong==1) {
+   if(wrong==1 && trainedNerve==1) {
+       if(reward)
+            dopamine=dpeak;
+
        /*
        if(reward)
             dopamine=dpeak;
@@ -231,8 +232,8 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
    if(inputEnable) {
        if(phase==0) {
            if(inp==inputInterval) {
-               inputs[0]->potential=21;
-               inputsFired[0]=1;
+               inputs[inputNerve]->potential=50;
+               inputsFired[inputNerve]=1;
 
                /*
                for(int i=0;i<trainNum;i++) {
@@ -288,14 +289,30 @@ void sendPulse() { //Nerve** activeNerves, int* activeNum) {
        //printf("%f\n", act);
        adjustConnections();
        if(tickCount<=plotSize) {
-           if(tickCount>1000) {
+           if(tickCount>1000 && !statistic) {
                iterationAvg1+=output1count;
                iterationAvg2+=output2count;
            }
-            sendPulse();
+           if(counter>0) {
+                //inputNerve=inputNerves[149];
+                inputNerve=1;
+                //trainedNerve=inputNerves[149];
+                trainedNerve=0;
+           } else {
+                 inputNerve=inputNerves[counter];
+                 if(counter<40)
+                    trainedNerve=1;
+                 else
+                     trainedNerve=1;
+           }
+           //printf("%d\n", counter);
+           //printf("%f\n", wrec[38][17]);
+
+           sendPulse();
        } else {
            iterationAvg1/=300;
            iterationAvg2/=300;
+           printf("%f %f\n", iterationAvg1, iterationAvg2);
            pthread_exit(NULL);
        }
    //} 

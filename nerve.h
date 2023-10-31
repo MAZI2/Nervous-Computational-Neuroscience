@@ -89,6 +89,7 @@ void line(Nerve* start, Nerve* end, float width, int output) {
             glColor4f(1.f/dopamine, 1.f, 1.f, 0.5f*width);
 
     }
+    /*
     int both=0;
     for(int j=0;j<ix;j++) {
         if(path[j]==start->id)
@@ -100,6 +101,7 @@ void line(Nerve* start, Nerve* end, float width, int output) {
             glColor4f(1.f, 1.f, 0.f, 0.5f*width);
         }
     }
+    */
 
 
     glLineWidth(1);
