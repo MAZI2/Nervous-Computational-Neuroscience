@@ -3,8 +3,7 @@ Nervous is a passion project that I am opening to public to gather ideas and peo
 
 The code can therefore be written way faster if/when that becomes necessary.
 
-![](https://media.giphy.com/media/w7pXFDeuOcnQdgpR9c/giphy.gif)
-
+![ezgif com-video-to-gif](https://github.com/MAZI2/Nervous-Computational-Neuroscience/assets/65289043/ccf9cf00-f687-4e8a-9ab8-d5ed190ef1e2)
 
 ## Project idea
 Nervous is a framework for visualizing and exploring nural networks that behave as similarly as possible to the human brain. It is not intended to reach a certain goal, rather to support quickly exploring ideas and hypotheses on neuron scale brain functions. This project aims to explore the authonomous organization of neurons and brain functions that emerge. Not the external mathematical methods for training neural networks!
