@@ -1,5 +1,5 @@
 # Project nervous
-Nervous is a passion project that I am opening to public to gather ideas and people with similar interes in Computational Neurology and Brain Simulation. The beauty and efficiency of code was subordinate to the workflow of quickly adding feature on feature to support ideas in research.
+Nervous is a passion project that I am opening to public to gather ideas and people with similar interests in Computational Neuroscience and Brain Simulation. The beauty and efficiency of code was subordinate to the workflow of quickly adding feature on feature to support ideas in research.
 
 The code can therefore be written way faster if/when that becomes necessary.
 
