@@ -1,13 +1,12 @@
 # Project nervous
-Nervous is a passion project that I am opening to public to gather ideas and people with similar interes in Computational Neurology and Brain Simulation. The beauty and efficiency of code was subordinate to the workflow of quickly adding feature on feature to support ideas in research.
+Nervous is a passion project that I am opening to public to gather ideas and people with similar interests in Computational Neuroscience and Brain Simulation. The beauty and efficiency of code was subordinate to the workflow of quickly adding feature on feature to support ideas in research.
 
 The code can therefore be written way faster if/when that becomes necessary.
 
-![](https://media.giphy.com/media/w7pXFDeuOcnQdgpR9c/giphy.gif)
-
+![ezgif com-video-to-gif](https://github.com/MAZI2/Nervous-Computational-Neuroscience/assets/65289043/ccf9cf00-f687-4e8a-9ab8-d5ed190ef1e2)
 
 ## Project idea
-Nervous is a framework for visualizing and exploring nural networks that behave as similarly as possible to the human brain. It is not intended to reach a certain goal, rather to support quickly exploring ideas and hypotheses on neuron scale brain functions. This project aims to explore the authonomous organization of neurons and brain functions that emerge. Not the external mathematical methods for training neural networks!
+Nervous is a framework for visualizing and exploring neural networks that behave as similarly as possible to the human brain. It is not intended to reach a certain goal, rather to support quickly exploring ideas and hypotheses on neuron scale brain functions. This project aims to explore the authonomous organization of neurons and brain functions that emerge. Not the external mathematical methods for training neural networks!
 
 The project was currently used to explore:
 
