@@ -9,6 +9,7 @@ typedef struct _Point {
 
 
 //functions for drawing neurons and connections
+// TODO: rename the header!
 
 void buildCircle(float radius, int vCount, Nerve* nerve) {
     float cx=nerve->x;

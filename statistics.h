@@ -120,6 +120,7 @@ void activityAvg(int newFired) {
     tickCount++;
 }
 
+// TODO: take array as argument
 void outputAvg(int first, int second) {
     if(avgOutCount1<10) {
         avgOut1[avgOutCount1]=first;

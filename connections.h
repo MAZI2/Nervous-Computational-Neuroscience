@@ -1,4 +1,5 @@
 //array of fired neurons from previous iteration
+// TODO: variable names and fixed numbers - bad
 int prev[100];
 int fired=0;
 //array of fired in the last iteration
@@ -8,6 +9,8 @@ int tempFired=0;
 int outputsFired[2];
 int inputsFired[2];
 
+
+// desensitize neurons after firing
 //resensitizing fatigued neurons every iteration
 void resensitize() {
     for(int i=0;i<tempFired;i++) {
@@ -121,7 +124,7 @@ void adjustConnections() {
     fired=tempFired;
 
     //save connections to file
-    //TODO: whould be togglable
+    //TODO: should be togglable
     for(int i=0;i<recNum;i++) {
         for(int j=0;j<recNum;j++) {
            fprintf(saved, "%f ", wrec[i][j]); 

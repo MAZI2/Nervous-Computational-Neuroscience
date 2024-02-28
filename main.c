@@ -45,8 +45,10 @@ void printStatus() {
 
     printf("avgActivitiy: %f\n", avgAct);
 
+    // TODO: display for any size of output array 
     printf("Output 1 activity: %f\n", output1count);
     printf("Output 2 activity: %f\n", output2count);
+    // --
     printf("Output 1 potential: %f\n", outputs[0]->potential);
     printf("Output 2 potential: %f", outputs[1]->potential);
 

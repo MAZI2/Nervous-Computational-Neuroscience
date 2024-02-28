@@ -52,6 +52,7 @@ void createConnections() {
         } 
         */
         //recurrent
+        // TODO: inefficient ... adjacency matrix would be better
         for(int j=0;j<recNum;j++) {
             if(j!=i) {
                 int a=randInt(0, 10);

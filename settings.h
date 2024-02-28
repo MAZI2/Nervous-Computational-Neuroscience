@@ -62,8 +62,10 @@ int inputEnable=1;
 //show status
 int enableStatus=1;
 //rewarded output
+// TODO: array
 int trainedNerve=1;
 //input to be fired
+// TODO: array
 int inputNerve=1;
 
 //input sequence

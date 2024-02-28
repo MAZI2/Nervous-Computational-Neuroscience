@@ -1,6 +1,6 @@
 #include "connections.h"
 
-//to wait inputInterval between input fires 
+//counter for inputInterval between inputs
 int inp=0;
 //general purpose counter ... currently counts input fires
 int counter=0;
@@ -8,17 +8,24 @@ int counter=0;
 
 //extremely long pulse function
 void sendPulse() {
+   // number of neurons that reached the threshold this iteration (stored in tempPrev[])
    tempFired=0;
 
    usleep(timer);
 
+   // neurons that received input in this iteration
+   // TODO: use macro
    Nerve* temp[100];
-   int anyActivity=0;
+
+   // any activity in this iteration
+   // int anyActivity=0;
 
    //incremented
    int count=0;
 
    //reccurent nerves iteration (inputs from recurrent and input -> to recurrent)
+   // TODO: should probbably be incremented the other way round 
+   // TODO: (check each active neuron and increment it's neighbours ... adjacency list for better time complexity)
    for(int i=0;i<recNum;i++) {
        float potential=nerves[i]->potential;
        float desensitize=nerves[i]->desensitize;
@@ -101,7 +108,9 @@ void sendPulse() {
 
        nerves[i]->potential=potential;
    }
-   //end of iteration -------------------------------------
+   // -------------------------------------
+
+   // TODO: move following to separate function
    
    //set inputs to 0 after firing
    for(int i=0;i<inNum;i++) {
@@ -116,9 +125,7 @@ void sendPulse() {
            outputs[i]->potential=0;
    }
 
-   int outputActivity=0; 
-   int outputActivity1=0;
-
+   // TODO: any output array size
    int outSkips[2]={0, 0};
 
    //increment output neurons
@@ -138,19 +145,19 @@ void sendPulse() {
        }
 
        
+       // TODO: should do any size of output array
        if(outputs[0]->potential>threshold) {
-           outputActivity=1;
+           //storing fired outputs to properly adjust their weights
            outputsFired[0]=1;
        } else
            outputsFired[0]=0;
 
        if(outputs[1]->potential>threshold) {
-           outputActivity1=1;
            outputsFired[1]=1;
        } else
            outputsFired[1]=0;
    }
-   //decrease outputs
+   //decrease outputs (do not decrease if it was incremented in this iteration)
    for(int i=0;i<outNum;i++) {
         if(!outSkips[i]) {
            if(outputs[i]->potential-0.3f>0)
@@ -185,13 +192,13 @@ void sendPulse() {
    }
 
 
-   //dopamine
-   if(outputActivity==1 && trainedNerve==0) {
+   //dopamine ... for every output that is rewarded, increase dopamine ... need to make general
+   // TODO: move to a separate function
+   if(outputsFired[0]==1 && trainedNerve==0) {
        if(reward)
             dopamine=dpeak;
    }
-
-   if(outputActivity1==1 && trainedNerve==1) {
+   if(outputsFired[1]==1 && trainedNerve==1) {
        if(reward)
             dopamine=dpeak;
    } else if(dopamine>1.f) {
@@ -200,6 +207,7 @@ void sendPulse() {
         dopamine+=decay;
    }
 
+   // TODO: move to a separate function
    if(inputEnable) {
        if(inp==inputInterval) {
            //SINGLE INPUT
@@ -231,22 +239,26 @@ void sendPulse() {
 //  --------------------------------------- 
 
    //a dumb way of recording activity of output 1 and 2
-   if(outputActivity && outputActivity1)
+   // TODO: should take array as argument
+   // TODO: could slow down the system if many outputs
+   // TODO: outputAvg(firedOutputs, len)
+   if(outputsFired[0] && outputsFired[1])
        outputAvg(1, 1);
-   else if(outputActivity)
+   else if(outputsFired[0])
        outputAvg(1, 0);
-   else if(outputActivity1)
+   else if(outputsFired[1])
        outputAvg(0, 1);
    else
        outputAvg(0, 0);
 
 
-   //average overall activity
+   //average overall activity 
    activityAvg(tempFired);
 
    //increase and decrease connections
    adjustConnections();
 
+   // TODO: move to a separate function
    if(tickCount<=plotSize) {
        //if 1300 ticks ... after 1000th start recording outputs
        if(tickCount>1000 && statistic) {
@@ -255,6 +267,7 @@ void sendPulse() {
        }
 
        //FOR INPUT AS A SEQUENCE
+       // INPUT FUNCTION
        /*
        //if simulation goes beyond the input sequence, repeat last input
        if(counter>149) {
@@ -276,6 +289,7 @@ void sendPulse() {
        trainedNerve=1;
 
        sendPulse();
+       // END OF ITERATION
    } else {
        //average outputs last 300ticks ... are plotted
        iterationAvg1/=300;

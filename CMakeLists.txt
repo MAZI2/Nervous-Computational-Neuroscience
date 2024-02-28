@@ -10,6 +10,7 @@ set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only" )
 set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
 
 add_subdirectory( glfw )
+find_library( GLUT glut )
 
 if( MSVC )
     SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:mainCRTStartup" )
@@ -20,8 +21,7 @@ set( GLFW-CMAKE-STARTER-SRC
      )
 
 add_executable( nervous WIN32 ${GLFW-CMAKE-STARTER-SRC} pbPlots.c supportLib.c)
-target_link_libraries( nervous ${OPENGL_LIBRARIES} glfw )
-target_link_libraries( nervous ${OPENGL_LIBRARIES} glut )
+target_link_libraries( nervous ${OPENGL_LIBRARIES} glfw {GLUT} )
 
 if( MSVC )
     if(${CMAKE_VERSION} VERSION_LESS "3.6.0") 
