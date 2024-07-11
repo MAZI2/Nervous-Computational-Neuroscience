@@ -7,13 +7,9 @@ float iterationAvg1=0;
 float iterationAvg2=0;
 
 //average output of 1 and 2 over 10 iterations
-int avgOut1[10]={0,0,0,0,0,0,0,0,0,0};
-int avgOutCount1=0;
-float output1count=0;
-
-int avgOut2[10]={0,0,0,0,0,0,0,0,0,0};
-int avgOutCount2=0;
-float output2count=0;
+int avgOutBuffer[OUT_NUM][10];
+int avgOutBufferCount[OUT_NUM];
+float outputAvg[OUT_NUM];
 
 //overall network average over 10 iterations
 int avg[10]={0,0,0,0,0,0,0,0,0,0};
@@ -93,7 +89,10 @@ void plot(double xs[], double ys1[], double ys2[], int len, char* name) {
 }
 
 //average network activity
-void activityAvg(int newFired) {
+void updateActivityAvg() {
+    int newFired=0;
+    for(int i=0;i<REC_NUM;i++)
+        newFired+=currentFired[i];
     if(avgCount<10) {
         avg[avgCount]=newFired;
         avgCount++;
@@ -108,52 +107,37 @@ void activityAvg(int newFired) {
         sum+=avg[i];
 
     avgAct=sum/10.f;
+}
 
-    //plot output activity
+void updateOutputAvg() {
+    for(int i=0;i<OUT_NUM;i++) {
+        if(avgOutBufferCount[i]<10) {
+            avgOutBuffer[i][avgOutBufferCount[i]]=firedOutputs[i];
+            avgOutBufferCount[i]++;
+        } else {
+            for(int j=0;j<9;j++) {
+                avgOutBuffer[i][j]=avgOutBuffer[i][j+1];
+            }
+            avgOutBuffer[i][9]=firedOutputs[i];
+        }
+
+        outputAvg[i]=0;
+
+        for(int j=0;j<10;j++)
+           outputAvg[i]+=avgOutBuffer[i][j];
+
+        outputAvg[i]=outputAvg[i]/10.f;
+    }
+
+    //plot output activity for 2 outputs
     if(tickCount>=plotSize) {
         plot(xss, yss1, yss2, plotSize, "inter.png");
     } else{
         xss[tickCount]=tickCount;
-        yss1[tickCount]=output1count;
-        yss2[tickCount]=output2count;
+        yss1[tickCount]=outputAvg[0];
+        yss2[tickCount]=outputAvg[1];
     }
     tickCount++;
-}
-
-// TODO: take array as argument
-void outputAvg(int first, int second) {
-    if(avgOutCount1<10) {
-        avgOut1[avgOutCount1]=first;
-        avgOutCount1++;
-    } else {
-        for(int i=0;i<9;i++) {
-            avgOut1[i]=avgOut1[i+1];
-        }
-        avgOut1[9]=first;
-    }
-    //2
-    if(avgOutCount2<10) {
-        avgOut2[avgOutCount2]=second;
-        avgOutCount2++;
-    } else {
-        for(int i=0;i<9;i++) {
-            avgOut2[i]=avgOut2[i+1];
-        }
-        avgOut2[9]=second;
-    }
-
-
-
-    output1count=0;
-    output2count=0;
-
-    for(int i=0;i<10;i++)
-       output1count+=avgOut1[i];
-    for(int i=0;i<10;i++)
-       output2count+=avgOut2[i];
-
-    output1count=output1count/10.f;
-    output2count=output2count/10.f;
 }
 
 

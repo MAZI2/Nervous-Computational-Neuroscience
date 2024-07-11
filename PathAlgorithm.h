@@ -1,3 +1,5 @@
+// THIS NEEDS TO BE UPDATED!!
+
 //array where found path is stored
 int path[100];
 int ix=0;
@@ -7,7 +9,7 @@ void adjustOutgoing(int goalOutput) {
     //rec to rec
     //start to end
     for(int i=ix-1;i>=0;i--) {
-        for(int j=0;j<recNum;j++) {
+        for(int j=0;j<REC_NUM;j++) {
             if(i>0 && j!=path[i-1]) {
                 if(wrec[path[i]][j]>0) {
                     wrec[path[i]][j]=0.3f;
@@ -19,7 +21,7 @@ void adjustOutgoing(int goalOutput) {
             }
         }
         if(i==0) {
-            for(int j=0;j<outNum;j++) {
+            for(int j=0;j<OUT_NUM;j++) {
                 if(wout[path[i]][j]>0 && j!=goalOutput)
                     wout[path[i]][j]=0.3f;
             }
@@ -45,7 +47,7 @@ void findPath(Nerve* goal, int isOutput, int goalInput) {
         ix=0;
     }
 
-    for(int i=0;i<inNum;i++) {
+    for(int i=0;i<IN_NUM;i++) {
        if(win[i][goal->id]>0 && !isOutput && i==goalInput) {
             win[i][goal->id]=3.f;
             printf(" <- %dI\n", i);
@@ -53,18 +55,18 @@ void findPath(Nerve* goal, int isOutput, int goalInput) {
             return;
        }
     }
-    for(int i=0;i<recNum;i++) {
+    for(int i=0;i<REC_NUM;i++) {
         if(isOutput==1) {
-            if(nerves[i]->neuronType==1 && wout[i][goal->id]>0) {
+            if(neurons[i]->neuronType==1 && wout[i][goal->id]>0) {
                 wout[i][goal->id]=3.f;
                 printf("%d <- %d", goal->id, i);
 
                 path[ix]=i;
                 ix++;
-                findPath(nerves[i], 0, goalInput);
+                findPath(neurons[i], 0, goalInput);
                 break;
             }
-        } else if (nerves[i]->neuronType==1 && wrec[i][goal->id]>0) {
+        } else if (neurons[i]->neuronType==1 && wrec[i][goal->id]>0) {
             int forbidden=0;
             for(int j=0;j<tempix;j++) {
                 if(i==temp[j]) {
@@ -78,7 +80,7 @@ void findPath(Nerve* goal, int isOutput, int goalInput) {
 
                 path[ix]=i;
                 ix++;
-                findPath(nerves[i], 0, goalInput); 
+                findPath(neurons[i], 0, goalInput); 
                 break;
             }
         }

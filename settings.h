@@ -1,28 +1,10 @@
-typedef struct _Nerve {
-    float x, y;
-    int id;
-    float potential;
-    //excitatory 1 / inhibitory -1
-    //same as neuron type
-    float multiplier;
-    int neuronType;
-    //response to dopamine excitatoryu 1 / inhibitory -1
-    int receptorType;
-    //current fatigue
-    float desensitize;
-} Nerve;
-
-static Nerve** inputs;
-static Nerve** nerves;
-static Nerve** outputs;
-
 //number of inputs, outputs, recurrent
-int inNum=2;
-int outNum=2;
-int recNum=100;
+#define IN_NUM 2
+#define OUT_NUM 2
+#define REC_NUM 400
 //dimensions of recurrent
-int recX=10;
-int recY=10;
+#define REC_X 20
+#define REC_Y 20
 
 //action potential treshold
 float threshold=18.f;
@@ -34,14 +16,18 @@ float decay=0.15f; //0.05
 float dpeak=2.f;//1.7f;
 //neuron fatigue(cooldown) after firing ... fatigue decay is 0.1
 float fatigue=0.5f;
+//potential decay over time
+float potentialDecay=0.3f;
+//rate of resensitizing
+float resensitizeRate=0.1f;
 //how much connections are adjusted
 float pathAdjust=0.1f;//0.1f;
 //time between input fires
 int inputInterval=2;//3
 
-float win[2][100];
-float wrec[100][100];
-float wout[100][2];
+float win[IN_NUM][REC_NUM];
+float wrec[REC_NUM][REC_NUM];
+float wout[REC_NUM][OUT_NUM];
 
 //restore saved connections
 int restore=0;
@@ -54,7 +40,7 @@ int trainNum=0;
 int trainingNerves[1];
 */
 
-int seed=39;//4
+int seed=2;//4
 //delay between two iterations
 int timer=100000;
 //enable input
@@ -62,12 +48,11 @@ int inputEnable=1;
 //show status
 int enableStatus=1;
 //rewarded output
-// TODO: array
-int trainedNerve=1;
+int trainedNeurons[]={1};
+int trainedNeuronsNum=1;
 //input to be fired
-// TODO: array
-int inputNerve=1;
-
+int firedInputs[]={1};
+int firedInputsNum=1;
 //input sequence
 /*
 int inputNerves[150]={1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0};

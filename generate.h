@@ -1,3 +1,5 @@
+#include "PathAlgorithm.h"
+
 int randInt(int lower, int upper) {
     int num = (rand() % (upper - lower + 1)) + lower;
     return num;
@@ -5,20 +7,20 @@ int randInt(int lower, int upper) {
 
 void createConnections() {
     //inputs randomly connected to left half of recurrent
-    for(int i=0;i<inNum;i++) {
-        for(int j=0;j<recNum;j++) {
-            if((j%10)<5) {
-                int rnd=randInt(0, 2);
+    for(int i=0;i<IN_NUM;i++) {
+        for(int j=0;j<REC_NUM;j++) {
+            if((j%REC_X)<REC_X/2) {
+                int rnd=randInt(0, 10);
                 if(rnd==0)
                     win[i][j]=1.5f;
             }
         }
     }
     //outputs randomly connected to right half of recurrent
-    for(int i=0;i<outNum;i++) {
-        for(int j=0;j<recNum;j++) {
-            if((j%10)>5) {
-                int rnd=randInt(0, 1);
+    for(int i=0;i<OUT_NUM;i++) {
+        for(int j=0;j<REC_NUM;j++) {
+            if((j%REC_X)<REC_X/2) {
+                int rnd=randInt(0, 10);
                 if(rnd==0)
                     //printf("this\n");
                     wout[j][i]=1.5f;
@@ -26,26 +28,26 @@ void createConnections() {
         }
     }
 
-    for(int i=0;i<recNum;i++) {
+    for(int i=0;i<REC_NUM;i++) {
         //feedforward
         /*
-        if((i-recX+1)%recX!=0) {
-            if(i-recX>=0) {
-                wrec[i][i-recX+1]=1.5f;
-                if((i-recX+2)%recX!=0)
-                    wrec[i][i-recX+2]=1.5f;
-                //printf("%d->%d ", i, i-recX+1);
+        if((i-REC_X+1)%REC_X!=0) {
+            if(i-REC_X>=0) {
+                wrec[i][i-REC_X+1]=1.5f;
+                if((i-REC_X+2)%REC_X!=0)
+                    wrec[i][i-REC_X+2]=1.5f;
+                //printf("%d->%d ", i, i-REC_X+1);
             }
 
             wrec[i][i+1]=1.5f;
             //printf("%d->%d ", i, i+1);
 
-            if(i+recX<recNum) {
-                wrec[i][i+recX+1]=1.5f;
-                if((i+recX+1)<recNum && (i+recX+2)%recX!=0)
-                    wrec[i][i+recX+2]=1.5f;
+            if(i+REC_X<REC_NUM) {
+                wrec[i][i+REC_X+1]=1.5f;
+                if((i+REC_X+1)<REC_NUM && (i+REC_X+2)%REC_X!=0)
+                    wrec[i][i+REC_X+2]=1.5f;
 
-                //printf("%d->%d\n", i, i+recX+1);
+                //printf("%d->%d\n", i, i+REC_X+1);
             } else {}
                 //printf("\n");
 
@@ -53,9 +55,9 @@ void createConnections() {
         */
         //recurrent
         // TODO: inefficient ... adjacency matrix would be better
-        for(int j=0;j<recNum;j++) {
+        for(int j=0;j<REC_NUM;j++) {
             if(j!=i) {
-                int a=randInt(0, 10);
+                int a=randInt(0, 50);
                 if(a==10) {
                     wrec[i][j]=1.5f;
                 }
@@ -83,23 +85,21 @@ void createConnections() {
 
 void createNerves() {
    int count=0;
-   nerves=malloc(recNum*sizeof(Nerve*));
-   for(int i=0;i<recY;i++) {
-        for(int j=0;j<recX;j++) {
+   neurons=malloc(REC_NUM*sizeof(Nerve*));
+   for(int i=0;i<REC_Y;i++) {
+        for(int j=0;j<REC_X;j++) {
             Nerve* new=malloc(sizeof(Nerve));
-            new->x=j*50-150;
-            new->y=i*50-230;
+            new->x=j*25-150;
+            new->y=i*25-230;
             new->id=count;
             new->potential=0;
 
             new->neuronType=1;
-            new->multiplier=1.f;
             new->desensitize=1.f;
 
             int type=randInt(0, 2);
             if(type==0) {
                 new->neuronType=-1;
-                new->multiplier=-1.f;
             }
 
             new->receptorType=1;
@@ -107,12 +107,12 @@ void createNerves() {
             if(receptor==0)
                 new->receptorType=-1;
 
-            nerves[count]=new;
+            neurons[count]=new;
             count++;
         } 
    } 
-   inputs=malloc(inNum*sizeof(Nerve*));
-   for(int i=0;i<inNum;i++) {
+   inputs=malloc(IN_NUM*sizeof(Nerve*));
+   for(int i=0;i<IN_NUM;i++) {
         Nerve* new=malloc(sizeof(Nerve));
         new->x=-250;
         new->y=i*200-100;
@@ -121,13 +121,12 @@ void createNerves() {
 
         new->neuronType=1;
         new->receptorType=1;
-        new->multiplier=1.f;
         new->desensitize=1.f;
 
         inputs[i]=new;
    }
-   outputs=malloc(outNum*sizeof(Nerve*));
-   for(int i=0;i<outNum;i++) {
+   outputs=malloc(OUT_NUM*sizeof(Nerve*));
+   for(int i=0;i<OUT_NUM;i++) {
         Nerve* new=malloc(sizeof(Nerve));
         new->x=400;
         new->y=i*200-100;
@@ -136,7 +135,6 @@ void createNerves() {
 
         new->neuronType=1;
         new->receptorType=1;
-        new->multiplier=1.f; 
         new->desensitize=1.f;
 
         outputs[i]=new;

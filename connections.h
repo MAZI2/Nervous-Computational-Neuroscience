@@ -1,31 +1,20 @@
-//array of fired neurons from previous iteration
-// TODO: variable names and fixed numbers - bad
-int prev[100];
-int fired=0;
-//array of fired in the last iteration
-int tempPrev[100];
-int tempFired=0;
-
-int outputsFired[2];
-int inputsFired[2];
-
+/* adjust connections in iteration 
+ *
+ */
 
 // desensitize neurons after firing
-//resensitizing fatigued neurons every iteration
-void resensitize() {
-    for(int i=0;i<tempFired;i++) {
-        int a=tempPrev[i];
-        nerves[a]->desensitize-=fatigue;
+// resensitizing fatigued neurons every iteration
+void adjustFatigue() {
+    for(int i=0;i<REC_NUM;i++) {
+        if(previousFired[i]) 
+            neurons[i]->desensitize-=fatigue;
+        else if(neurons[i]->desensitize<1.f) {
+            neurons[i]->desensitize+=resensitizeRate;
+        }
     }
-    for(int i=0;i<recNum;i++) {
-        int d=nerves[i]->desensitize;
-        if(d<1.f)
-            nerves[i]->desensitize+=0.1f;
-    }
-    for(int i=0;i<outNum;i++) {
-        int d=outputs[i]->desensitize;
-        if(d<1.f)
-            outputs[i]->desensitize+=0.1f;
+    for(int i=0;i<OUT_NUM;i++) {
+        if(outputs[i]->desensitize<1.f)
+            outputs[i]->desensitize+=resensitizeRate;
     }
 }
 
@@ -36,72 +25,56 @@ void adjustConnections() {
     //compare neurons to neurons that fired in last iteration
     //strengthen connection if successful (neuron that fired caused other to fire in next iteration)
     //decrease connection if unsuccessful
-    for(int i=0;i<fired;i++) {
-        for(int j=0;j<tempFired;j++) {
-            int a=prev[i];
-            int b=tempPrev[j];
-            if(wrec[a][b]>0) {
-                wrec[a][b]+=pathAdjust;
-            } 
-        }
-        for(int j=0;j<outNum;j++) {
-            if(outputsFired[j]) {
-                int a=prev[i];
-                if(wout[a][j]>0) {
-                    wout[a][j]+=pathAdjust;
+    for(int i=0;i<REC_NUM;i++) {
+        if(!previousFired[i])
+            continue;
+
+        //adjust recurrent to recurrent
+        for(int j=0;j<REC_NUM;j++) {
+            if(wrec[i][j]>0) {
+                if(currentFired[j]) {
+                    wrec[i][j]+=pathAdjust;
+                } else {
+                    if(wrec[i][j]-pathAdjust<0)
+                        wrec[i][j]=0;
+                    else
+                        wrec[i][j]-=pathAdjust;
                 }
             }
         }
-        //decrease recurrent to recurrent
-        //very inefficient
-        for(int j=0;j<recNum;j++) {
-            int successful=0;
-            for(int k=0;k<tempFired;k++) {
-                if(j==tempPrev[k]) {
-                    successful=1;
-                    break;
+
+        //adjust output connections
+        for(int j=0;j<OUT_NUM;j++) {
+            if(wout[i][j]>0) {
+                if(firedOutputs[j]) {
+                    wout[i][j]+=pathAdjust;
+                } else {
+                    if(wout[i][j]-pathAdjust<0)
+                        wout[i][j]=0;
+                    else
+                        wout[i][j]-=pathAdjust;
                 }
             }
-
-            int a=prev[i];
-
-            if(!successful && wrec[a][j]>0) {
-                if(wrec[a][j]-pathAdjust<0)
-                    wrec[a][j]=0;
-                else
-                    wrec[a][j]-=pathAdjust;
-            }
         }
-
-        //decrease output connections
-        for(int j=0;j<outNum;j++) {
-            int a=prev[i];
-            if(!outputsFired[j] && wout[a][j]>0) {
-                if(wout[a][j]-pathAdjust<0)
-                    wout[a][j]=0;
-                else
-                    wout[a][j]-=pathAdjust;
-            }
-        }
-
     }
+
     //input neurons to recurrent are currently not adjusted
     
     //adjust input connections
     /*
-    for(int i=0;i<inNum;i++) {
+    for(int i=0;i<IN_NUM;i++) {
         if(inputsFired[i]) {
-            for(int j=0;j<tempFired;j++) {
-                int b=tempPrev[j];
+            for(int j=0;j<currentFiredNum;j++) {
+                int b=currentFired[j];
                 if(win[i][b]>0)
                     win[i][b]+=0.1f;
             }
 
             //decrease input connections
-            for(int j=0;j<recNum;j++) {
+            for(int j=0;j<REC_NUM;j++) {
                 int success=0;
-                for(int k=0;k<tempFired;k++) {
-                    if(j==tempPrev[k]) {
+                for(int k=0;k<currentFiredNum;k++) {
+                    if(j==currentFired[k]) {
                         success=1;
                         break;
                     }
@@ -117,20 +90,13 @@ void adjustConnections() {
     }
     */
 
-    //swap prev with current
-    for(int i=0;i<tempFired;i++) {
-        prev[i]=tempPrev[i];
-    }
-    fired=tempFired;
-
     //save connections to file
     //TODO: should be togglable
-    for(int i=0;i<recNum;i++) {
-        for(int j=0;j<recNum;j++) {
+    for(int i=0;i<REC_NUM;i++) {
+        for(int j=0;j<REC_NUM;j++) {
            fprintf(saved, "%f ", wrec[i][j]); 
         }
     }
     
     fclose(saved);
-    resensitize();
 }

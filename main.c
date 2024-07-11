@@ -5,15 +5,17 @@
 
 //network specifications
 #include "settings.h"
+#include "neuron.h"
 
-#include "PathAlgorithm.h"
-//draw
-#include "nerve.h"
 //generate neurons and connections
 #include "generate.h"
+//draw
+#include "drawShapes.h"
 
+//statistics functions
 #include "statistics.h"
-#include "pulse.h"
+//main update function
+#include "pulse2.h"
 
 typedef struct _threadArgs{
     int len;
@@ -22,16 +24,22 @@ typedef struct _threadArgs{
 
 //currently everything on one thread
 void *thread(void *vargp) {
-        int t;
+    // initialize arrays
+    for(int i=0;i<OUT_NUM;i++) {
+        correctOutputs[i]=0;
+        tempOutputs[i]=0;
+        firedOutputs[i]=0;
+    }
+    for(int i=0;i<REC_NUM;i++) {
+        previousFired[i]=0;
+        currentFired[i]=0;
+        tempRecurrent[i]=0;
+    }
+    for(int i=0;i<trainedNeuronsNum;i++)
+        correctOutputs[trainedNeurons[i]]=1;
 
-        threadArgs* args=(threadArgs*)vargp;
-        int len=args->len;
-        int* inputsArr=args->inputs;
-
-        for(int i=0;i<len;i++) {
-            inputs[inputsArr[i]]->potential=22;
-        }
-        sendPulse();
+    fireInputs();
+    sendPulse();
 
     return NULL;
 }
@@ -45,20 +53,15 @@ void printStatus() {
 
     printf("avgActivitiy: %f\n", avgAct);
 
-    // TODO: display for any size of output array 
-    printf("Output 1 activity: %f\n", output1count);
-    printf("Output 2 activity: %f\n", output2count);
+    for(int i=0;i<OUT_NUM;i++)
+        printf("Output %d activity: %f\n", i, outputAvg[i]);
     // --
     printf("Output 1 potential: %f\n", outputs[0]->potential);
     printf("Output 2 potential: %f", outputs[1]->potential);
 
-
     printf("\n");
     printf("Dopamine: %f\n", dopamine);
     printf("Decay: %f\n", decay);
-
-    printf("I1:%d  O1%d\n", inputsFired[0], outputsFired[0]);
-    printf("I2:%d  O2%d\n", inputsFired[1], outputsFired[1]);
 
     printf("\n");
     printf("Params\n");
@@ -72,33 +75,14 @@ void printStatus() {
 
     printf("\n");
 
-    //display of output fires over 10ticks and the sum
-    int sum1=0;
-    int sum2=0;
-    for(int i=0;i<10;i++) {
-        if(avgOut1[i]) sum1++;
-        printf("%d ", avgOut1[i]);
-    }
-    printf("%d\n", sum1);
-
-
-    for(int i=0;i<10;i++) {
-        if(avgOut2[i]) sum2++;
-        printf("%d ", avgOut2[i]);
-    }
-    printf("%d\n", sum2);
-
-
-    //move cursor up 24 lines
-    for(int i=0;i<24;i++)
+    //move cursor up 18 + OUT_NUM lines
+    for(int i=0;i<18+OUT_NUM;i++)
         printf("\r\033[F");
 
     fflush(stdout);
 }
 
-
 int main() {
-
     srand(seed);
 
     //GLFW setup ------------------------
@@ -124,14 +108,14 @@ int main() {
     double cx, cy;
     //------------------------------------
 
-
+    //create nerves
     createNerves();
 
     //restore connections from file
     if(restore) {
         FILE* saved=fopen("saved.txt", "r");
-        for(int i=0;i<recNum;i++) {
-            for(int j=0;j<recNum;j++) {
+        for(int i=0;i<REC_NUM;i++) {
+            for(int j=0;j<REC_NUM;j++) {
                 fscanf(saved, "%f", &wrec[i][j]);
             }
         }
@@ -140,23 +124,24 @@ int main() {
 
     //arguments for input fired at start (deprecated ... handled from settings and inside pulse function)
     threadArgs* a=malloc(sizeof(threadArgs));
-    int aa[1]={1};
-    a->inputs=aa;
-    a->len=1;
 
-    int b=1;
-    int c=1;
-
-    //arrays for plotting output1 (avgs1) and output2 (avgs2) if in statistics mode 
+    //arrays for plotting output1 (avgs1) and output2 (avgs2) if in statistic mode 
     double avgxs[50];
     double avgs1[50];
     double avgs2[50];
 
+    // if statistic mode is enabled, random seeds will be tested and plotted
     if(statistic) {
         //increment seed and recreate neurons and connections
         for(int i=0;i<statisticInterval;i++) {
             srand(seed);
             createNerves();
+
+            for(int i=0;i<OUT_NUM;i++) {
+                avgOutBufferCount[i]=0;
+                outputAvg[i]=0;
+            }
+                
 
             pthread_t thread_id1;
             pthread_create(&thread_id1, NULL, thread, (void *)a);
@@ -165,6 +150,7 @@ int main() {
             seed++;
             tickCount=0;
 
+            // iteration averages from statistics.h
             printf("%d 1: %f, 2: %f\n", seed, iterationAvg1, iterationAvg2);
 
             avgs1[i]=iterationAvg1;
@@ -220,11 +206,6 @@ int main() {
 
         glTranslatef(0.f, 20.f, 0.f);
 
-        /*
-        double t = glfwGetTime();
-        glRotatef(0.3f * (GLfloat) x + (GLfloat) t * 100.f, 0.f, 0.f, 1.f);
-        */
-
         //-------------------------------------------------------------------------
 
         drawNerves();
@@ -232,22 +213,9 @@ int main() {
         if(enableStatus)
             printStatus();
 
-        //glfwSetKeyCallback(window, keyPressed);
-
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    /*
-    if(!statistic)
-        pthread_join(thread_id1, NULL);
-    */
-
-    /*
-    pthread_join(thread_id2, NULL);
-
-    pthread_join(thread_id3, NULL);
-    */
 
     glfwTerminate();
     return 0;
